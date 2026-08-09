@@ -3,7 +3,7 @@ async function verificarAtualizacao(modelo, versaoAtual) {
     alert("O atualizador começou.");
 
     const endereco =
-        "https://raw.githubusercontent.com/fr-pius/BMM/refs/heads/main/BMM.json";
+    "https://raw.githubusercontent.com/fr-pius/BMM/refs/heads/main/BMM.json";
 
     try {
 
