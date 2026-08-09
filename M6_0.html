@@ -330,62 +330,6 @@ btnImprimir.addEventListener("click", () => {
 });
 
 </script>
-
-<script>
-
-async function verificarAtualizacao(modelo, versaoAtual) {
-
-    const endereco =
-        "https://raw.githubusercontent.com/fr-pius/BMM/refs/heads/main/BMM.json";
-
-    try {
-
-        const resposta = await fetch(endereco);
-        const dados = await resposta.json();
-
-        const versaoDisponivel = dados[modelo];
-
-        if (!versaoDisponivel) {
-            return;
-        }
-
-        if (versaoDisponivel !== versaoAtual) {
-
-            alert(
-                "Existe uma versão mais recente do " +
-                modelo +
-                " disponível.\n\n" +
-                "Versão atual: " +
-                versaoAtual +
-                "\n" +
-                "Versão disponível: " +
-                versaoDisponivel
-            );
-        }
-
-    } catch (erro) {
-
-        console.log(
-            "Não foi possível verificar atualizações da BMM.",
-            erro
-        );
-
-    }
-}
-
-</script>
-
-<script>
-alert("1 - O M6 chegou até o atualizador.");
-
-alert("2 - Vou chamar a função.");
-
-alert("3 - Tipo da função: " + typeof verificarAtualizacao);
-
-verificarAtualizacao("M6", "0");
-
-alert("4 - A função terminou.");
-</script>
-
+    
 </body>
 </html>
