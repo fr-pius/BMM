@@ -1,7 +1,7 @@
 async function verificarAtualizacao(modelo, versaoAtual) {
 
     const endereco =
-        "https://raw.githubusercontent.com/fr-pius/BMM/refs/heads/main/BMM.json";
+    "https://raw.githubusercontent.com/fr-pius/BMM/refs/heads/main/BMM.json?t=" + Date.now();
 
     try {
 
