@@ -1,24 +1,287 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Tabela de Horários da Hospedaria — M1</title>
 
-    <!-- O CSS da Engine M1 será inserido aqui -->
     <style>
-        /* CSS da Engine M1 */
+
+        /* =========================================================
+           ENGINE M1
+           TABELA DE HORÁRIOS DA HOSPEDARIA
+           ========================================================= */
+
+
+        /* ---------------------------------------------------------
+           CONFIGURAÇÃO GERAL
+           --------------------------------------------------------- */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Georgia, "Times New Roman", serif;
+            background: #e9e1cf;
+            color: #000;
+        }
+
+
+        /* ---------------------------------------------------------
+           DOCUMENTO
+           --------------------------------------------------------- */
+
+        .m1-document {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+
+        /* ---------------------------------------------------------
+           BOTÃO DE IMPRESSÃO
+           --------------------------------------------------------- */
+
+        .m1-print-button {
+            display: block;
+
+            margin: 0 auto 20px auto;
+            padding: 10px 24px;
+
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 15px;
+            font-weight: bold;
+
+            color: #000;
+            background: #d8cdb5;
+
+            border: 1px solid #000;
+            border-radius: 4px;
+
+            cursor: pointer;
+        }
+
+        .m1-print-button:hover {
+            background: #c9bda3;
+        }
+
+        .m1-print-button:active {
+            transform: translateY(1px);
+        }
+
+
+        /* ---------------------------------------------------------
+           TABELA
+           --------------------------------------------------------- */
+
+        .m1-schedule {
+            width: 100%;
+
+            border-collapse: collapse;
+            table-layout: fixed;
+
+            background: #f7f2e6;
+
+            border: 2px solid #000;
+        }
+
+
+        /* ---------------------------------------------------------
+           CABEÇALHO
+           --------------------------------------------------------- */
+
+        .m1-schedule thead th {
+            background: #d8cdb5;
+
+            border: 1px solid #000;
+
+            padding: 7px 4px;
+
+            font-size: 15px;
+            font-weight: bold;
+
+            text-align: center;
+            vertical-align: middle;
+        }
+
+
+        /* ---------------------------------------------------------
+           CÉLULAS DO CORPO
+           --------------------------------------------------------- */
+
+        .m1-schedule tbody th,
+        .m1-schedule tbody td {
+
+            border: 1px solid #000;
+
+            padding: 6px 4px;
+
+            font-size: 14px;
+            font-weight: bold;
+
+            text-align: center;
+            vertical-align: middle;
+        }
+
+
+        /* ---------------------------------------------------------
+           PRIMEIRA COLUNA — DIAS
+           --------------------------------------------------------- */
+
+        .m1-schedule tbody th {
+            width: 17%;
+            background: #eee7d7;
+        }
+
+
+        /* ---------------------------------------------------------
+           COLUNAS ESPECIAIS
+           Missa / Almoço / Jantar
+           --------------------------------------------------------- */
+
+        .m1-schedule thead th:nth-child(4),
+        .m1-schedule thead th:nth-child(8),
+        .m1-schedule thead th:nth-child(11),
+
+        .m1-schedule tbody td:nth-child(4),
+        .m1-schedule tbody td:nth-child(8),
+        .m1-schedule tbody td:nth-child(11) {
+
+            background: #e2d5b8;
+        }
+
+
+        /* ---------------------------------------------------------
+           OBSERVAÇÃO
+           --------------------------------------------------------- */
+
+        .m1-note {
+            margin: 7px 0 0 0;
+
+            font-size: 13px;
+            font-style: italic;
+
+            text-align: left;
+        }
+
+
+        /* =========================================================
+           IMPRESSÃO
+           ========================================================= */
+
+        @media print {
+
+            @page {
+                size: A4 landscape;
+                margin: 8mm;
+            }
+
+
+            html,
+            body {
+
+                width: 100%;
+                height: 100%;
+
+                margin: 0;
+                padding: 0;
+
+                background: #fff;
+            }
+
+
+            .m1-document {
+
+                width: 100%;
+                max-width: none;
+
+                margin: 0;
+                padding: 0;
+            }
+
+
+            /* O botão não será impresso */
+
+            .m1-print-button {
+                display: none !important;
+            }
+
+
+            /* Tabela ocupa a largura disponível */
+
+            .m1-schedule {
+                width: 100%;
+
+                border: 2px solid #000;
+
+                page-break-inside: avoid;
+            }
+
+
+            /* Mantém as cores na impressão */
+
+            .m1-schedule thead th,
+            .m1-schedule tbody th,
+            .m1-schedule tbody td {
+
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+
+            .m1-note {
+
+                margin-top: 5px;
+
+                font-size: 11px;
+            }
+        }
+
     </style>
 </head>
 
+
 <body>
+
 
     <main class="m1-document">
 
+
+        <!-- =====================================================
+             BOTÃO DE IMPRESSÃO
+             ===================================================== -->
+
+        <button
+            type="button"
+            class="m1-print-button"
+            onclick="window.print()">
+
+            Imprimir
+
+        </button>
+
+
+        <!-- =====================================================
+             TABELA M1
+             ===================================================== -->
+
         <table class="m1-schedule">
 
+
             <thead>
+
                 <tr>
+
                     <th>Dia</th>
                     <th>Matinas</th>
                     <th>Laudes</th>
@@ -31,13 +294,21 @@
                     <th>Vésperas</th>
                     <th>Jantar</th>
                     <th>Completas</th>
+
                 </tr>
+
             </thead>
+
 
             <tbody>
 
+
+                <!-- DOMINGO -->
+
                 <tr>
+
                     <th>Domingo</th>
+
                     <td>04:00</td>
                     <td>05:55</td>
                     <td>10:00</td>
@@ -49,10 +320,16 @@
                     <td>17:15</td>
                     <td>17:55</td>
                     <td>18:57</td>
+
                 </tr>
 
+
+                <!-- SEGUNDA-FEIRA -->
+
                 <tr>
+
                     <th>Segunda-feira</th>
+
                     <td>04:00</td>
                     <td>05:55</td>
                     <td>11:00</td>
@@ -64,10 +341,16 @@
                     <td>17:00</td>
                     <td>17:55</td>
                     <td>18:45</td>
+
                 </tr>
 
+
+                <!-- TERÇA-FEIRA -->
+
                 <tr>
+
                     <th>Terça-feira</th>
+
                     <td>04:00</td>
                     <td>05:55</td>
                     <td>06:20</td>
@@ -79,10 +362,16 @@
                     <td>17:00</td>
                     <td>17:55</td>
                     <td>19:45</td>
+
                 </tr>
 
+
+                <!-- QUARTA-FEIRA -->
+
                 <tr>
+
                     <th>Quarta-feira</th>
+
                     <td>04:00</td>
                     <td>05:55</td>
                     <td>11:00</td>
@@ -94,10 +383,16 @@
                     <td>17:00</td>
                     <td>17:55</td>
                     <td>18:45</td>
+
                 </tr>
 
+
+                <!-- QUINTA-FEIRA -->
+
                 <tr>
+
                     <th>Quinta-feira</th>
+
                     <td>04:00</td>
                     <td>05:55</td>
                     <td>06:20</td>
@@ -109,10 +404,16 @@
                     <td>17:00</td>
                     <td>17:55</td>
                     <td>19:45</td>
+
                 </tr>
 
+
+                <!-- SEXTA-FEIRA -->
+
                 <tr>
+
                     <th>Sexta-feira</th>
+
                     <td>04:00</td>
                     <td>05:55</td>
                     <td>11:00</td>
@@ -124,10 +425,16 @@
                     <td>17:00</td>
                     <td>17:55</td>
                     <td>18:45</td>
+
                 </tr>
 
+
+                <!-- PRIMEIRA SEXTA DO MÊS -->
+
                 <tr>
+
                     <th>Primeira Sexta do Mês</th>
+
                     <td>04:00</td>
                     <td>05:55</td>
                     <td>11:00</td>
@@ -139,10 +446,16 @@
                     <td>17:00</td>
                     <td>17:55</td>
                     <td>18:45</td>
+
                 </tr>
 
+
+                <!-- SÁBADO -->
+
                 <tr>
+
                     <th>Sábado</th>
+
                     <td>04:00</td>
                     <td>05:55</td>
                     <td>11:00</td>
@@ -154,10 +467,16 @@
                     <td>17:00</td>
                     <td>17:55</td>
                     <td>18:45</td>
+
                 </tr>
 
+
+                <!-- SÁBADO DE TONSURA -->
+
                 <tr>
+
                     <th>Sábado de Tonsura</th>
+
                     <td>04:00</td>
                     <td>05:55</td>
                     <td>11:00</td>
@@ -169,10 +488,16 @@
                     <td>17:00</td>
                     <td>17:55</td>
                     <td>19:50</td>
+
                 </tr>
 
+
+                <!-- PRIMEIRA ORDEM -->
+
                 <tr>
+
                     <th>Primeira Ordem</th>
+
                     <td>03:45</td>
                     <td>05:55</td>
                     <td>10:15</td>
@@ -184,10 +509,16 @@
                     <td>17:00</td>
                     <td>17:55</td>
                     <td>18:45</td>
+
                 </tr>
 
+
+                <!-- SEGUNDA ORDEM -->
+
                 <tr>
+
                     <th>Segunda Ordem</th>
+
                     <td>03:45</td>
                     <td>05:55</td>
                     <td>11:00</td>
@@ -199,21 +530,49 @@
                     <td>17:00</td>
                     <td>17:55</td>
                     <td>18:45</td>
+
                 </tr>
 
+
             </tbody>
+
         </table>
+
+
+        <!-- =====================================================
+             OBSERVAÇÃO
+             ===================================================== -->
 
         <p class="m1-note">
             Terceira Ordem: Matinas às 03:45.
         </p>
 
+
     </main>
 
-    <!-- O JavaScript da Engine M1 será inserido aqui -->
+
+    <!-- =========================================================
+         JAVASCRIPT DA ENGINE M1
+         ========================================================= -->
+
     <script>
-        /* JavaScript da Engine M1 */
+
+        /*
+         * Botão de impressão
+         *
+         * A função nativa do navegador abre a janela de
+         * impressão. As regras @media print do CSS cuidam
+         * de esconder o botão e preparar o documento para
+         * A4 em orientação paisagem.
+         */
+
+        function imprimirM1() {
+            window.print();
+        }
+
     </script>
 
+
 </body>
+
 </html>
