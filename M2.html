@@ -1,1 +1,407 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Escala de Adoração ao Santíssimo Sacramento — M2</title>
+
+    <style>
+
+        /* =========================================================
+           ENGINE M2
+           ESCALA DE ADORAÇÃO AO SANTÍSSIMO SACRAMENTO
+           ========================================================= */
+
+
+        /* ---------------------------------------------------------
+           CONFIGURAÇÃO GERAL
+           --------------------------------------------------------- */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Georgia, "Times New Roman", serif;
+            color: #000;
+            background: #e9e1cf;
+        }
+
+
+        /* ---------------------------------------------------------
+           ÁREA DO DOCUMENTO
+           --------------------------------------------------------- */
+
+        .m2-document {
+            width: 100%;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 35px;
+        }
+
+
+        /* ---------------------------------------------------------
+           BOTÃO DE IMPRESSÃO
+           --------------------------------------------------------- */
+
+        .m2-print-button {
+            display: block;
+
+            margin: 0 auto 25px auto;
+            padding: 9px 22px;
+
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 15px;
+            font-weight: bold;
+
+            color: #000;
+            background: #d8cdb5;
+
+            border: 1px solid #000;
+            border-radius: 4px;
+
+            cursor: pointer;
+        }
+
+        .m2-print-button:hover {
+            background: #c9bda3;
+        }
+
+        .m2-print-button:active {
+            transform: translateY(1px);
+        }
+
+
+        /* ---------------------------------------------------------
+           TÍTULO PRINCIPAL
+           --------------------------------------------------------- */
+
+        .m2-title {
+            margin: 0 0 25px 0;
+
+            font-size: 25px;
+            font-weight: bold;
+
+            text-align: center;
+        }
+
+
+        /* ---------------------------------------------------------
+           TÍTULOS DOS BLOCOS
+           --------------------------------------------------------- */
+
+        .m2-day-title {
+            margin: 0 0 7px 0;
+
+            font-size: 17px;
+            font-weight: bold;
+
+            text-align: left;
+        }
+
+
+        /* ---------------------------------------------------------
+           ESPAÇO ENTRE OS DOIS BLOCOS
+           --------------------------------------------------------- */
+
+        .m2-section {
+            margin-bottom: 25px;
+        }
+
+
+        /* ---------------------------------------------------------
+           CAIXAS
+           --------------------------------------------------------- */
+
+        .m2-table {
+            width: 100%;
+
+            border-collapse: collapse;
+            table-layout: fixed;
+
+            background: #f7f2e6;
+
+            border: 2px solid #000;
+        }
+
+
+        /* ---------------------------------------------------------
+           CABEÇALHO DA PRIMEIRA CAIXA
+           --------------------------------------------------------- */
+
+        .m2-table:first-of-type thead th {
+            background: #d8cdb5;
+
+            border: 1px solid #000;
+
+            padding: 8px 6px;
+
+            font-size: 15px;
+            font-weight: bold;
+
+            text-align: center;
+            vertical-align: middle;
+        }
+
+
+        /* ---------------------------------------------------------
+           CÉLULAS
+           --------------------------------------------------------- */
+
+        .m2-table td {
+
+            height: 34px;
+
+            padding: 6px;
+
+            border: 1px solid #000;
+
+            font-size: 14px;
+
+            text-align: center;
+            vertical-align: middle;
+        }
+
+
+        /* ---------------------------------------------------------
+           COLUNAS
+           --------------------------------------------------------- */
+
+        .m2-table th:first-child,
+        .m2-table td:first-child {
+            width: 35%;
+        }
+
+        .m2-table th:nth-child(2),
+        .m2-table td:nth-child(2) {
+            width: 65%;
+        }
+
+
+        /* ---------------------------------------------------------
+           ENCERRAMENTO
+           --------------------------------------------------------- */
+
+        .m2-closing {
+            font-weight: bold;
+        }
+
+
+        /* =========================================================
+           IMPRESSÃO
+           ========================================================= */
+
+        @media print {
+
+            @page {
+                size: A4 portrait;
+                margin: 12mm;
+            }
+
+            html,
+            body {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+
+                background: #fff;
+            }
+
+            .m2-document {
+                width: 100%;
+                max-width: none;
+
+                margin: 0;
+                padding: 0;
+            }
+
+            .m2-print-button {
+                display: none !important;
+            }
+
+            .m2-section {
+                page-break-inside: avoid;
+            }
+
+            .m2-table {
+                width: 100%;
+            }
+
+            .m2-table thead th {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+    <main class="m2-document">
+
+
+        <!-- =====================================================
+             BOTÃO DE IMPRESSÃO
+             ===================================================== -->
+
+        <button
+            type="button"
+            class="m2-print-button"
+            onclick="imprimirM2()">
+
+            Imprimir
+
+        </button>
+
+
+        <!-- =====================================================
+             TÍTULO PRINCIPAL
+             ===================================================== -->
+
+        <h1 class="m2-title">
+            Escala de Adoração ao Santíssimo Sacramento
+        </h1>
+
+
+        <!-- =====================================================
+             PRIMEIRA SEÇÃO
+             QUINTA-FEIRA SANTA
+             ===================================================== -->
+
+        <section class="m2-section">
+
+            <h2 class="m2-day-title">
+                Quinta-feira Santa
+            </h2>
+
+
+            <table class="m2-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Horário</th>
+                        <th>Nome para Presença</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    <tr>
+                        <td>19:00 – 20:00</td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>20:00 – 21:00</td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>21:00 – 22:00</td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>22:00 – 23:00</td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>23:00 – 00:00</td>
+                        <td></td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+        <!-- =====================================================
+             SEGUNDA SEÇÃO
+             SEXTA-FEIRA SANTA
+             ===================================================== -->
+
+        <section class="m2-section">
+
+            <h2 class="m2-day-title">
+                Sexta-feira Santa
+            </h2>
+
+
+            <table class="m2-table">
+
+                <tbody>
+
+                    <tr>
+                        <td>00:00 – 01:00</td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>01:00 – 02:00</td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>02:00 – 03:00</td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>03:00 – 04:00</td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>04:00 – 05:00</td>
+                        <td></td>
+                    </tr>
+
+                    <tr class="m2-closing">
+                        <td>05:00 – 05:45</td>
+                        <td>Encerramento</td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+    </main>
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+         ========================================================= -->
+
+    <script>
+
+        function imprimirM2() {
+            window.print();
+        }
+
+    </script>
+
+</body>
+
+</html>
+```
 
