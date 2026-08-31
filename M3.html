@@ -1,0 +1,540 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Horário Litúrgico — M3</title>
+
+    <style>
+
+        /* =========================================================
+           ENGINE M3
+           MODELO DE PROGRAMAÇÃO LITÚRGICA
+           ========================================================= */
+
+
+        /* ---------------------------------------------------------
+           CONFIGURAÇÃO GERAL
+           --------------------------------------------------------- */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Georgia, "Times New Roman", serif;
+            color: #000;
+            background: #e9e1cf;
+        }
+
+
+        /* ---------------------------------------------------------
+           DOCUMENTO
+           --------------------------------------------------------- */
+
+        .m3-document {
+            width: 100%;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 35px 45px;
+        }
+
+
+        /* ---------------------------------------------------------
+           BOTÃO DE IMPRESSÃO
+           --------------------------------------------------------- */
+
+        .m3-print-button {
+            display: block;
+
+            margin: 0 auto 30px auto;
+            padding: 9px 23px;
+
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 15px;
+            font-weight: bold;
+
+            color: #000;
+            background: #d8cdb5;
+
+            border: 1px solid #000;
+            border-radius: 4px;
+
+            cursor: pointer;
+        }
+
+        .m3-print-button:hover {
+            background: #c9bda3;
+        }
+
+
+        /* ---------------------------------------------------------
+           CABEÇALHO
+           --------------------------------------------------------- */
+
+        .m3-symbol {
+            margin: 0;
+
+            font-size: 24px;
+            font-weight: bold;
+
+            text-align: center;
+        }
+
+        .m3-pax {
+            margin: 3px 0 25px 0;
+
+            font-size: 20px;
+            font-weight: bold;
+
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .m3-title {
+            margin: 0 0 30px 0;
+
+            font-size: 25px;
+            font-weight: bold;
+
+            text-align: center;
+        }
+
+
+        /* ---------------------------------------------------------
+           SEÇÕES / DIAS
+           --------------------------------------------------------- */
+
+        .m3-day {
+            margin-bottom: 25px;
+        }
+
+        .m3-day-title {
+            margin: 0 0 10px 0;
+
+            padding-bottom: 5px;
+
+            border-bottom: 2px solid #000;
+
+            font-size: 19px;
+            font-weight: bold;
+
+            text-align: left;
+        }
+
+
+        /* ---------------------------------------------------------
+           LISTA DE HORÁRIOS
+           --------------------------------------------------------- */
+
+        .m3-schedule {
+            margin: 0;
+            padding: 0;
+
+            list-style: none;
+        }
+
+
+        /* ---------------------------------------------------------
+           ITEM
+           --------------------------------------------------------- */
+
+        .m3-entry {
+            display: flex;
+
+            width: 100%;
+
+            margin: 0;
+            padding: 5px 0;
+
+            line-height: 1.35;
+        }
+
+
+        /* ---------------------------------------------------------
+           HORÁRIO
+           --------------------------------------------------------- */
+
+        .m3-time {
+            flex: 0 0 105px;
+
+            font-weight: bold;
+
+            white-space: nowrap;
+        }
+
+
+        /* ---------------------------------------------------------
+           DESCRIÇÃO
+           --------------------------------------------------------- */
+
+        .m3-description {
+            flex: 1;
+
+            text-align: left;
+        }
+
+
+        /* ---------------------------------------------------------
+           OBSERVAÇÕES
+           --------------------------------------------------------- */
+
+        .m3-note {
+            margin: 5px 0 5px 105px;
+
+            font-style: italic;
+        }
+
+
+        /* ---------------------------------------------------------
+           DESTAQUES
+           --------------------------------------------------------- */
+
+        .m3-emphasis {
+            font-weight: bold;
+        }
+
+
+        /* ---------------------------------------------------------
+           FINAL DO DOCUMENTO
+           --------------------------------------------------------- */
+
+        .m3-footer {
+            margin-top: 30px;
+
+            font-size: 15px;
+            font-weight: bold;
+
+            text-align: center;
+        }
+
+
+        /* =========================================================
+           IMPRESSÃO
+           ========================================================= */
+
+        @media print {
+
+            @page {
+                size: A4 portrait;
+                margin: 15mm;
+            }
+
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+
+                background: #fff;
+            }
+
+            .m3-document {
+                width: 100%;
+                max-width: none;
+
+                margin: 0;
+                padding: 0;
+            }
+
+            .m3-print-button {
+                display: none !important;
+            }
+
+            .m3-day {
+                page-break-inside: avoid;
+            }
+
+            .m3-entry {
+                page-break-inside: avoid;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+    <main class="m3-document">
+
+
+        <!-- =====================================================
+             BOTÃO
+             ===================================================== -->
+
+        <button
+            type="button"
+            class="m3-print-button"
+            onclick="imprimirM3()">
+
+            Imprimir
+
+        </button>
+
+
+        <!-- =====================================================
+             CABEÇALHO
+             ===================================================== -->
+
+        <div class="m3-symbol">
+            ✠
+        </div>
+
+        <div class="m3-pax">
+            PAX
+        </div>
+
+        <h1 class="m3-title">
+            Horário Litúrgico
+        </h1>
+
+
+        <!-- =====================================================
+             PRIMEIRO DIA
+             ===================================================== -->
+
+        <section class="m3-day">
+
+            <h2 class="m3-day-title">
+                Quinta-feira
+            </h2>
+
+            <ul class="m3-schedule">
+
+                <li class="m3-entry">
+                    <span class="m3-time">5:40 –</span>
+                    <span class="m3-description">
+                        LEVANTAR (cafezinho)
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">5:57 –</span>
+                    <span class="m3-description">
+                        ANGELUS EM SILÊNCIO (já no coro)
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">6:00 –</span>
+                    <span class="m3-description">
+                        OFÍCIO DE TREVAS, seguido de café da manhã
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">9:00 –</span>
+                    <span class="m3-description">
+                        MISSA SOLENE
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">11:45 –</span>
+                    <span class="m3-description">
+                        SEXTA CANTADA
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">14:15 –</span>
+                    <span class="m3-description">
+                        NÔA, seguida de trabalho manual
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">17:00 –</span>
+                    <span class="m3-description">
+                        MISSA VESPERAL
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">19:00 –</span>
+                    <span class="m3-description">
+                        JANTAR
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">20:00 –</span>
+                    <span class="m3-description">
+                        COMPLETAS
+                    </span>
+                </li>
+
+            </ul>
+
+        </section>
+
+
+        <!-- =====================================================
+             SEGUNDO DIA
+             ===================================================== -->
+
+        <section class="m3-day">
+
+            <h2 class="m3-day-title">
+                Sexta-feira
+            </h2>
+
+            <ul class="m3-schedule">
+
+                <li class="m3-entry">
+                    <span class="m3-time">5:40 –</span>
+                    <span class="m3-description">
+                        LEVANTAR (cafezinho)
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">6:00 –</span>
+                    <span class="m3-description">
+                        OFÍCIO DE TREVAS, seguido de café da manhã
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">11:45 –</span>
+                    <span class="m3-description">
+                        SEXTA
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">15:00 –</span>
+                    <span class="m3-description">
+                        SOLENE ADORAÇÃO DA CRUZ
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">18:30 –</span>
+                    <span class="m3-description">
+                        COLAÇÃO DO JEJUM
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">18:50 –</span>
+                    <span class="m3-description">
+                        CAPÍTULO E COMPLETAS
+                    </span>
+                </li>
+
+            </ul>
+
+        </section>
+
+
+        <!-- =====================================================
+             TERCEIRO DIA
+             ===================================================== -->
+
+        <section class="m3-day">
+
+            <h2 class="m3-day-title">
+                Sábado
+            </h2>
+
+            <ul class="m3-schedule">
+
+                <li class="m3-entry">
+                    <span class="m3-time">5:40 –</span>
+                    <span class="m3-description">
+                        LEVANTAR (cafezinho)
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">6:00 –</span>
+                    <span class="m3-description">
+                        OFÍCIO DE TREVAS, seguido de café da manhã
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">9:15 –</span>
+                    <span class="m3-description">
+                        PRIMA seguida de oração
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">9:45 –</span>
+                    <span class="m3-description">
+                        TERÇA — fim do GRANDE SILÊNCIO
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">11:45 –</span>
+                    <span class="m3-description">
+                        SEXTA
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">14:15 –</span>
+                    <span class="m3-description">
+                        NÔA
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">17:40 –</span>
+                    <span class="m3-description">
+                        JANTAR NORMAL
+                    </span>
+                </li>
+
+                <li class="m3-entry">
+                    <span class="m3-time">22:00 –</span>
+                    <span class="m3-description">
+                        SOLENE VIGÍLIA E MISSA DA VIGÍLIA PASCAL
+                    </span>
+                </li>
+
+            </ul>
+
+        </section>
+
+
+        <!-- =====================================================
+             RODAPÉ
+             ===================================================== -->
+
+        <div class="m3-footer">
+            U.I.O.G.D.
+        </div>
+
+
+    </main>
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+         ========================================================= -->
+
+    <script>
+
+        function imprimirM3() {
+            window.print();
+        }
+
+    </script>
+
+</body>
+
+</html>
+```
