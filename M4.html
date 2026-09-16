@@ -1951,144 +1951,145 @@ Receberá futuramente dois horários
 
     <script>
 
+        /* ======================================================
+           01. INICIALIZAÇÃO
+           ====================================================== */
+
         "use strict";
 
         alert("Início do script");
 
         /* ======================================================
-           ENGINE
-        ====================================================== */
+           02. OBJETO DO M4
+           ====================================================== */
 
         const engine = {
 
-            version: "4.0.3",
+            "use strict";
 
-            project: "BMM",
-
-            document: "BMM_ENGINE_4.0.3"
-
-        };
-
-        /* ======================================================
-           RENDERIZA O QUADRO PRINCIPAL
-        ====================================================== */
+            alert("Início do script");
 
 
-        /*
-                html += `
-        
-        <div class="row-four">
-        
-            <div class="time">
-                ${partes[0].trim()}
-            </div>
-        
-            <div class="activity">
-                ${partes[1].trim()}
-            </div>
-        
-            <div class="time">
-                ${partes[2].trim()}
-            </div>
-        
-            <div class="activity">
-                ${partes[3].trim()}
-            </div>
-        
-        </div>`;
-        
-            });
-        
-            mainSchedule.innerHTML = html;
-        
-        }
-        */
-        Object.freeze(engine);
+            /* ======================================================
+               RENDERIZA O QUADRO PRINCIPAL
+            ====================================================== */
 
-        alert("Engine criada.");
+
+            /*
+                    html += `
+            
+            <div class="row-four">
+            
+                <div class="time">
+                    ${partes[0].trim()}
+                </div>
+            
+                <div class="activity">
+                    ${partes[1].trim()}
+                </div>
+            
+                <div class="time">
+                    ${partes[2].trim()}
+                </div>
+            
+                <div class="activity">
+                    ${partes[3].trim()}
+                </div>
+            
+            </div>`;
+            
+                });
+            
+                mainSchedule.innerHTML = html;
+            
+            }
+            */
+            Object.freeze(engine);
+
+            alert("Engine criada.");
 
         /* ======================================================
-           CAMPOS EDITÁVEIS DA ENGINE
-        ====================================================== */
+            03. CAMPOS EDITÁVEIS
+           ====================================================== */
 
         const editableFields = {
 
-            principal: "",
+                principal: "",
 
-            comum: "",
+                comum: "",
 
-            festivo: "",
+                festivo: "",
 
-            sabado: "",
+                sabado: "",
 
-            quinta: "",
+                quinta: "",
 
-            sexta: "",
+                sexta: "",
 
-            observacoes: ""
+                observacoes: ""
 
-        };
+            };
 
-        /* ======================================================
-           ESTADO DO EDITOR
-        ====================================================== */
+            /* ======================================================
+                  04. ESTADO DO EDITOR
+               ====================================================== */
 
-        let currentField = null;
+            let currentField = null;
 
-        /* ======================================================
-           ELEMENTOS DA INTERFACE
-        ====================================================== */
+            /* ======================================================
+               05. ELEMENTOS DA INTERFACE
+               ====================================================== */
 
-        const editorMenu =
-            document.getElementById("editor-menu");
+            const editorMenu =
+                document.getElementById("editor-menu");
 
-        const editorWindow =
-            document.getElementById("editor-window");
+            const editorWindow =
+                document.getElementById("editor-window");
 
-        const editorSelect =
-            document.getElementById("editor-select");
+            const editorSelect =
+                document.getElementById("editor-select");
 
-        const editorTitle =
-            document.getElementById("editor-title");
+            const editorTitle =
+                document.getElementById("editor-title");
 
-        const editorText =
-            document.getElementById("editor-text");
+            const editorText =
+                document.getElementById("editor-text");
 
-        const btnAbrir =
-            document.getElementById("btnAbrir");
+            const btnAbrir =
+                document.getElementById("btnAbrir");
 
-        const btnAtualizar =
-            document.getElementById("editor-update");
+            const btnAtualizar =
+                document.getElementById("editor-update");
 
-        const btnCancelar =
-            document.getElementById("editor-cancel");
+            const btnCancelar =
+                document.getElementById("editor-cancel");
 
-        const btnVoltar =
-            document.getElementById("editor-back");
+            const btnVoltar =
+                document.getElementById("editor-back");
 
-        const btnPrint =
-            document.getElementById("btn-print");
+            const btnPrint =
+                document.getElementById("btn-print");
 
-        /* ======================================================
-           CARREGA UM CAMPO NO EDITOR
-        ====================================================== */
+            /* ======================================================
+               06. FUNÇÕES DO EDITOR
+            ====================================================== */
 
-        function loadField(fieldName) {
+            function loadField(fieldName) {
 
-            alert("loadField executada!");
+                alert("loadField executada!");
 
-            currentField = fieldName;
+        currentField = fieldName;
 
-            editorTitle.textContent = fieldName;
+        editorTitle.textContent = fieldName;
 
-            editorText.value =
-                editableFields[fieldName] ?? "";
+        editorText.value =
+            editableFields[fieldName] ?? "";
 
-            editorMenu.style.display = "none";
+        editorMenu.style.display = "none";
 
-            editorWindow.style.display = "flex";
+        editorWindow.style.display = "flex";
 
-        }
+             }
         function saveField() {
 
             if (currentField === null) {
