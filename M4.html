@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -27,21 +26,13 @@
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="description"
-        content="Biblioteca de Modelos do Mosteiro - Engine Beta 1.2">
+    <meta name="description" content="Biblioteca de Modelos do Mosteiro - Engine Beta 1.2">
 
-    <meta
-        name="author"
-        content="Biblioteca de Modelos do Mosteiro">
+    <meta name="author" content="Biblioteca de Modelos do Mosteiro">
 
-    <meta
-        name="generator"
-        content="BMM_M4_ENGINE_BETA_1.2">
+    <meta name="generator" content="BMM_M4_ENGINE_BETA_1.2">
 
     <title>
 
@@ -53,14 +44,9 @@
          FONTES
     ============================================================== -->
 
-    <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
 
-    <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link
         href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=UnifrakturMaguntia&display=swap"
@@ -71,49 +57,48 @@
     ============================================================== -->
 
     <style>
-
-    /* ==========================================================
+        /* ==========================================================
        RESET
     ========================================================== */
 
-    *{
-        margin:0;
-        padding:0;
-        box-sizing:border-box;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    html{
+        html {
 
-        font-size:16px;
+            font-size: 16px;
 
-    }
+        }
 
-    body{
+        body {
 
-        background:#d8d8d8;
+            background: #d8d8d8;
 
-        font-family:
-            "Crimson Text",
-            serif;
+            font-family:
+                "Crimson Text",
+                serif;
 
-        color:#111;
+            color: #111;
 
-        display:flex;
+            display: flex;
 
-        justify-content:center;
+            justify-content: center;
 
-        padding:28px;
+            padding: 28px;
 
-    }
+        }
 
-    /* ==========================================================
+        /* ==========================================================
        VARIÁVEIS GERAIS
     ========================================================== */
-/* ==========================================================
+        /* ==========================================================
    PROPRIEDADES GLOBAIS DA ENGINE
 ========================================================== */
 
-/*
+        /*
 
 As variáveis abaixo constituem a configuração
 geral da Engine.
@@ -124,587 +109,580 @@ neste bloco, evitando valores fixos ao longo
 do restante do código.
 
 */
-    :root{
+        :root {
 
-        /* Página */
+            /* Página */
 
-        --page-width:210mm;
-        --page-height:297mm;
+            --page-width: 210mm;
+            --page-height: 297mm;
 
-        /* Margens */
+            /* Margens */
 
-        --margin-top:14mm;
-        --margin-right:14mm;
-        --margin-bottom:14mm;
-        --margin-left:14mm;
+            --margin-top: 14mm;
+            --margin-right: 14mm;
+            --margin-bottom: 14mm;
+            --margin-left: 14mm;
 
-        /* Fontes */
-/* ======================================================
+            /* Fontes */
+            /* ======================================================
    ESCALA TIPOGRÁFICA
 ====================================================== */
 
---font-cross:18pt;
+            --font-cross: 18pt;
 
---font-pax:25pt;
+            --font-pax: 25pt;
 
---font-document-title:20pt;
+            --font-document-title: 20pt;
 
---font-subtitle:11pt;
+            --font-subtitle: 11pt;
 
---font-schedule-title:12pt;
+            --font-schedule-title: 12pt;
 
---font-time:10.8pt;
+            --font-time: 10.8pt;
 
---font-activity:11pt;
+            --font-activity: 11pt;
 
---font-footer:8.5pt;
-        --font-title:
-    "Old English Text MT",
-    "UnifrakturMaguntia",
-    serif;
+            --font-footer: 8.5pt;
+            --font-title:
+                "Old English Text MT",
+                "UnifrakturMaguntia",
+                serif;
 
-        --font-body:
-            "Crimson Text",
-            serif;
+            --font-body:
+                "Crimson Text",
+                serif;
 
-        /* Cores */
+            /* Cores */
 
-        --ink:#111111;
+            --ink: #111111;
 
-        --border:#4f4f4f;
+            --border: #4f4f4f;
 
-        --header:#5f1414;
+            --header: #5f1414;
 
-        --green:#25653b;
+            --green: #25653b;
 
-        --red:#8b2323;
+            --red: #8b2323;
 
-        --blue:#1d56b5;
+            --blue: #1d56b5;
 
-        --paper:#ffffff;
-/* Tons editoriais */
+            --paper: #ffffff;
+            /* Tons editoriais */
 
---header-bg:#f4f4f4;
+            --header-bg: #f4f4f4;
 
---header-border:#666666;
+            --header-border: #666666;
 
---grid:#cfcfcf;
+            --grid: #cfcfcf;
 
-        --shadow:
-            rgba(0,0,0,.14);
+            --shadow:
+                rgba(0, 0, 0, .14);
 
-        /* Componentes */
+            /* Componentes */
 
-/* ======================================================
+            /* ======================================================
    ESCALA DE ESPAÇAMENTOS
 ====================================================== */
 
---padding-row-left:4mm;
+            --padding-row-left: 4mm;
 
---padding-row-right:2mm;
+            --padding-row-right: 2mm;
 
---toolbar-margin:7mm;
+            --toolbar-margin: 7mm;
 
---header-gap:2.5mm;
+            --header-gap: 2.5mm;
 
---schedule-title-height:11mm;
-        --frame:0.6mm;
+            --schedule-title-height: 11mm;
+            --frame: 0.6mm;
 
-        --row-height:8mm;
+            --row-height: 8mm;
 
-        --radius:0;
+            --radius: 0;
 
-        --gap-large:9mm;
+            --gap-large: 9mm;
 
-        --gap-medium:7mm;
+            --gap-medium: 7mm;
 
-        --gap-small:3mm;
+            --gap-small: 3mm;
 
-    }
-/* ==========================================================
+        }
+
+        /* ==========================================================
    PAINEL DA ENGINE
 ========================================================== */
 
-#editor-menu{
+        #editor-menu {
 
-    width:210mm;
+            width: 210mm;
 
-    margin:20px auto;
+            margin: 20px auto;
 
-    background:white;
+            background: white;
 
-    padding:16px;
+            padding: 16px;
 
-    display:flex;
+            display: flex;
 
-    flex-direction:column;
+            flex-direction: column;
 
-    gap:10px;
+            gap: 10px;
 
-    box-shadow:0 2px 10px rgba(0,0,0,.12);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .12);
 
-}
+        }
 
-#editor-menu label{
+        #editor-menu label {
 
-    font-weight:700;
+            font-weight: 700;
 
-}
+        }
 
-#editor-menu textarea{
+        #editor-menu textarea {
 
-    width:100%;
+            width: 100%;
 
-    min-height:180px;
+            min-height: 180px;
 
-    resize:vertical;
+            resize: vertical;
 
-    padding:10px;
+            padding: 10px;
 
-    font-family:Consolas, monospace;
+            font-family: Consolas, monospace;
 
-    font-size:14px;
+            font-size: 14px;
 
-    line-height:1.45;
+            line-height: 1.45;
 
-}
+        }
 
-#engine-buttons{
+        #engine-buttons {
 
-    display:flex;
+            display: flex;
 
-    justify-content:flex-end;
+            justify-content: flex-end;
 
-}
+        }
 
-#engine-buttons button{
+        #engine-buttons button {
 
-    padding:10px 18px;
+            padding: 10px 18px;
 
-    cursor:pointer;
+            cursor: pointer;
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    MENU DO EDITOR
 ========================================================== */
 
-#editor-menu{
+        #editor-menu {
 
-    width:210mm;
+            width: 210mm;
 
-    margin:0 auto 10mm auto;
+            margin: 0 auto 10mm auto;
 
-    padding:5mm;
+            padding: 5mm;
 
-    background:#ffffff;
+            background: #ffffff;
 
-    border:1px solid #cccccc;
+            border: 1px solid #cccccc;
 
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
 
-}
+        }
 
-#editor-menu h2{
+        #editor-menu h2 {
 
-    margin-bottom:2mm;
+            margin-bottom: 2mm;
 
-    font-size:16pt;
+            font-size: 16pt;
 
-}
+        }
 
-#editor-menu p{
+        #editor-menu p {
 
-    margin-bottom:3mm;
+            margin-bottom: 3mm;
 
-}
+        }
 
-#editor-select{
+        #editor-select {
 
-    width:100%;
+            width: 100%;
 
-    padding:2mm;
+            padding: 2mm;
 
-    font-size:11pt;
+            font-size: 11pt;
 
-    margin-bottom:3mm;
+            margin-bottom: 3mm;
 
-}
+        }
 
-#btnAbrir{
+        #btnAbrir {
 
-    padding:2mm 6mm;
+            padding: 2mm 6mm;
 
-    cursor:pointer;
+            cursor: pointer;
 
-}
+        }
 
-    /* ==========================================================
+        /* ==========================================================
        PÁGINA
     ========================================================== */
 
-    .page{
+        .page {
 
-        width:var(--page-width);
+            width: var(--page-width);
 
-        min-height:var(--page-height);
+            min-height: var(--page-height);
 
-        background:var(--paper);
+            background: var(--paper);
 
-        padding:
+            padding:
 
-            var(--margin-top)
-            var(--margin-right)
-            var(--margin-bottom)
-            var(--margin-left);
+                var(--margin-top) var(--margin-right) var(--margin-bottom) var(--margin-left);
 
-        position:relative;
+            position: relative;
 
-        box-shadow:
-            0 0 18px
-            var(--shadow);
+            box-shadow:
+                0 0 18px var(--shadow);
 
-    }
+        }
 
-    /* ==========================================================
+        /* ==========================================================
        BARRA SUPERIOR
     ========================================================== */
 
-    .toolbar{
+        .toolbar {
 
-        display:flex;
+            display: flex;
 
-        justify-content:flex-end;
+            justify-content: flex-end;
 
-        margin-bottom:var(--toolbar-margin);
+            margin-bottom: var(--toolbar-margin);
 
-    }
+        }
 
-    .print-button{
+        .print-button {
 
-        border:none;
+            border: none;
 
-        cursor:pointer;
+            cursor: pointer;
 
-        padding:
+            padding:
 
-            9px
-            18px;
+                9px 18px;
 
-        background:
+            background:
 
-            var(--header);
+                var(--header);
 
-        color:white;
+            color: white;
 
-        font-family:
+            font-family:
 
-            var(--font-body);
+                var(--font-body);
 
-        font-size:11pt;
+            font-size: 11pt;
 
-        transition:.20s;
+            transition: .20s;
 
-    }
+        }
 
-    .print-button:hover{
+        .print-button:hover {
 
-        background:#431010;
+            background: #431010;
 
-    }
+        }
 
-    /* ==========================================================
+        /* ==========================================================
        CABEÇALHO
     ========================================================== */
 
-    .header{
+        .header {
 
-    display:flex;
+            display: flex;
 
-    justify-content:center;
+            justify-content: center;
 
-    align-items:center;
+            align-items: center;
 
-    margin-bottom:var(--gap-medium);
+            margin-bottom: var(--gap-medium);
 
-}
+        }
 
-    .cross{
+        .cross {
 
-        font-size:var(--font-cross);
+            font-size: var(--font-cross);
 
-        line-height:1;
+            line-height: 1;
 
-    }
+        }
 
-    .pax{
+        .pax {
 
-        font-family:
+            font-family:
 
-            var(--font-title);
+                var(--font-title);
 
-        font-size:var(--font-pax);
+            font-size: var(--font-pax);
 
-        color:
+            color:
 
-            var(--header);
+                var(--header);
 
-        line-height:1;
+            line-height: 1;
 
-    }
+        }
 
-    .document-title{
+        .document-title {
 
-        font-family:
+            font-family:
 
-            var(--font-title);
+                var(--font-title);
 
-        font-size:var(--font-document-title);
+            font-size: var(--font-document-title);
 
-        color:
+            color:
 
-            var(--header);
+                var(--header);
 
-        text-align:center;
+            text-align: center;
 
-        line-height:1.15;
+            line-height: 1.15;
 
-    }
+        }
 
-    .document-subtitle{
+        .document-subtitle {
 
-        font-size:var(--font-subtitle);
+            font-size: var(--font-subtitle);
 
-        letter-spacing:.08em;
+            letter-spacing: .08em;
 
-        color:#666;
+            color: #666;
 
-    }
+        }
 
-    /* ==========================================================
+        /* ==========================================================
        ÁREA DOS QUADROS
     ========================================================== */
 
-    /* ==========================================================
+        /* ==========================================================
    ÁREA PRINCIPAL DOS QUADROS
 ========================================================== */
 
-.content{
+        .content {
 
-    display:flex;
+            display: flex;
 
-    flex-direction:column;
+            flex-direction: column;
 
-    gap:var(--gap-large);
+            gap: var(--gap-large);
 
-}
+        }
 
 
-/* ==========================================================
+        /* ==========================================================
    FAIXA DE QUADRO LARGO
 ========================================================== */
 
-.section-wide{
+        .section-wide {
 
-    display:block;
+            display: block;
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    LAYOUT SUPERIOR
 ========================================================== */
 
-.top-layout{
+        .top-layout {
 
-    display:grid;
+            display: grid;
 
-    grid-template-columns:2fr 1fr;
+            grid-template-columns: 2fr 1fr;
 
-    gap:var(--gap-medium);
+            gap: var(--gap-medium);
 
-    align-items:start;
+            align-items: start;
 
-}
+        }
 
-.top-left{
+        .top-left {
 
-    display:block;
+            display: block;
 
-}
+        }
 
-.top-right{
+        .top-right {
 
-    display:block;
+            display: block;
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    QUADRO DE REGRAS
 ========================================================== */
 
-.schedule-notes{
+        .schedule-notes {
 
-    min-height:100%;
+            min-height: 100%;
 
-}
+        }
 
-.notes-body{
+        .notes-body {
 
-    padding:2.5mm;
+            padding: 2.5mm;
 
-    font-size:var(--font-activity);
+            font-size: var(--font-activity);
 
-    line-height:1.45;
+            line-height: 1.45;
 
-}
+        }
 
-.notes-body ol{
+        .notes-body ol {
 
-    padding-left:3mm;
+            padding-left: 3mm;
 
-}
+        }
 
-.notes-body li{
+        .notes-body li {
 
-    margin-bottom:1mm;
+            margin-bottom: 1mm;
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    GRADE DE QUADROS
 ========================================================== */
 
-.section-grid{
+        .section-grid {
 
-    display:grid;
+            display: grid;
 
-    grid-template-columns:
+            grid-template-columns:
 
-        repeat(3,1fr);
+                repeat(3, 1fr);
 
-    gap:
+            gap:
 
-        var(--gap-medium);
+                var(--gap-medium);
 
-    align-items:start;
+            align-items: start;
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    CORPO DO QUADRO PRINCIPAL
 ========================================================== */
 
-.schedule-body{
+        .schedule-body {
 
-    display:flex;
+            display: flex;
 
-    align-items:stretch;
+            align-items: stretch;
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    GRADE HORÁRIA
 ========================================================== */
 
-.main-grid{
+        .main-grid {
 
-    flex:4;
+            flex: 4;
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    PAINEL EDITORIAL
 ========================================================== */
 
-.main-notes{
+        .main-notes {
 
-    flex:1;
+            flex: 1;
 
-    border-left:
+            border-left:
 
-        var(--frame)
+                var(--frame) solid var(--border);
 
-        solid
+            padding: 3mm;
 
-        var(--border);
+        }
 
-    padding:3mm;
-
-}
-
-/* ==========================================================
+        /* ==========================================================
    PAINEL INFERIOR
 ========================================================== */
 
-.bottom-layout{
+        .bottom-layout {
 
-    display:grid;
+            display: grid;
 
-    grid-template-columns:
+            grid-template-columns:
 
-        2fr 1fr;
+                2fr 1fr;
 
-    gap:var(--gap-medium);
+            gap: var(--gap-medium);
 
-    align-items:start;
+            align-items: start;
 
-}
+        }
 
-.left-column{
+        .left-column {
 
-    display:flex;
+            display: flex;
 
-    flex-direction:column;
+            flex-direction: column;
 
-    gap:var(--gap-medium);
+            gap: var(--gap-medium);
 
-}
+        }
 
-.right-column{
+        .right-column {
 
-    display:flex;
+            display: flex;
 
-    flex-direction:column;
+            flex-direction: column;
 
-    gap:var(--gap-medium);
+            gap: var(--gap-medium);
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    QUADRO LARGO
 ========================================================== */
 
-.schedule-wide{
+        .schedule-wide {
 
-    width:100%;
+            width: 100%;
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    LARGURA DOS QUADROS
 ========================================================== */
 
-.frame-span-1{
+        .frame-span-1 {
 
-    grid-column:span 1;
+            grid-column: span 1;
 
-}
+        }
 
-.frame-span-2{
+        .frame-span-2 {
 
-    grid-column:span 2;
+            grid-column: span 2;
 
-}
+        }
 
-.frame-span-3{
+        .frame-span-3 {
 
-    grid-column:span 3;
+            grid-column: span 3;
 
-}
+        }
+
         /* ==========================================================
            COMPONENTE: QUADRO
         ========================================================== */
-/*
+        /*
 
 COMPONENTE PRINCIPAL
 
@@ -715,20 +693,18 @@ Todos os elementos internos pertencem
 exclusivamente a este componente.
 
 */
-        .schedule{
+        .schedule {
 
-            display:flex;
+            display: flex;
 
-            flex-direction:column;
+            flex-direction: column;
 
             border:
-                var(--frame)
-                solid
-                var(--border);
+                var(--frame) solid var(--border);
 
-            background:#fff;
+            background: #fff;
 
-            overflow:hidden;
+            overflow: hidden;
 
         }
 
@@ -736,53 +712,49 @@ exclusivamente a este componente.
            TÍTULO DO QUADRO
         ========================================================== */
 
-         .schedule-title{
+        .schedule-title {
 
-    display:flex;
+            display: flex;
 
-    align-items:center;
+            align-items: center;
 
-    justify-content:center;
+            justify-content: center;
 
-    min-height:var(--schedule-title-height);
+            min-height: var(--schedule-title-height);
 
-    padding-top:1mm;
+            padding-top: 1mm;
 
-    padding-bottom:1mm;
+            padding-bottom: 1mm;
 
-    background:var(--header-bg);
+            background: var(--header-bg);
 
-    border-bottom:
+            border-bottom:
 
-        var(--frame)
+                var(--frame) solid var(--header-border);
 
-        solid
+            font-weight: 700;
 
-        var(--header-border);
+            font-size: var(--font-schedule-title);
 
-    font-weight:700;
+            letter-spacing: .08em;
 
-    font-size:var(--font-schedule-title);
+            text-align: center;
 
-    letter-spacing:.08em;
+            -webkit-print-color-adjust: exact;
 
-    text-align:center;
+            print-color-adjust: exact;
 
-    -webkit-print-color-adjust:exact;
-
-    print-color-adjust:exact;
-
-}
+        }
 
         /* ==========================================================
            CORPO DO QUADRO
         ========================================================== */
 
-        .rows{
+        .rows {
 
-            display:flex;
+            display: flex;
 
-            flex-direction:column;
+            flex-direction: column;
 
         }
 
@@ -790,52 +762,51 @@ exclusivamente a este componente.
    LINHA BASE
 ========================================================== */
 
-.row{
+        .row {
 
-    display:grid;
+            display: grid;
 
-    grid-template-columns:
+            grid-template-columns:
 
-        var(--time-column,28%)
+                var(--time-column, 28%) 1fr;
 
-        1fr;
+            min-height:
 
-    min-height:
+                var(--row-height);
 
-        var(--row-height);
+            border-bottom:
 
-    border-bottom:
+                0.4mm solid var(--grid);
 
-        0.4mm solid var(--grid);
+            align-items: center;
 
-    align-items:center;
+        }
 
-}
-/* ==========================================================
+        /* ==========================================================
    VARIAÇÕES DAS LINHAS
 ========================================================== */
 
-/*
+        /*
 Linha dupla
 
 Utilizada quando existem dois horários
 (Regular / Domingo).
 */
 
-.row-double{
+        .row-double {
 
-    /* Reservado para futuras regras */
+            /* Reservado para futuras regras */
 
-}
+        }
 
-/*
+        /*
 Linha divisória
 
 Utilizada para marcar mudanças de bloco,
 como "Próprio da Manhã".
 */
 
-/* ==========================================================
+        /* ==========================================================
    LINHA DIVISÓRIA
 
    Utilizada para indicar uma mudança lógica
@@ -849,199 +820,192 @@ como "Próprio da Manhã".
 
 ========================================================== */
 
-.row-divider{
+        .row-divider {
 
-    background:transparent;
+            background: transparent;
 
-    border-top:
-        2px solid var(--grid);
+            border-top:
+                2px solid var(--grid);
 
-    border-bottom:
-        2px solid var(--grid);
+            border-bottom:
+                2px solid var(--grid);
 
-    font-weight:700;
+            font-weight: 700;
 
-}
+        }
 
-.row-divider .time{
+        .row-divider .time {
 
-    font-weight:700;
+            font-weight: 700;
 
-}
+        }
 
-.row-divider .activity{
+        .row-divider .activity {
 
-    text-transform:uppercase;
+            text-transform: uppercase;
 
-    letter-spacing:.04em;
+            letter-spacing: .04em;
 
-}
-/* ==========================================================
+        }
+
+        /* ==========================================================
    CONFIGURAÇÃO DAS COLUNAS
 ========================================================== */
 
-/*
+        /*
 Linha normal
 */
 
-.row{
+        .row {
 
-    --time-column:28%;
+            --time-column: 28%;
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    QUADRO COMPOSTO
 ========================================================== */
 
-.rows-split{
+        .rows-split {
 
-    display:grid;
+            display: grid;
 
-    grid-template-columns:1fr 1fr;
+            grid-template-columns: 1fr 1fr;
 
-}
+        }
 
-.split-column{
+        .split-column {
 
-    display:flex;
+            display: flex;
 
-    flex-direction:column;
+            flex-direction: column;
 
-}
+        }
 
-.split-column:first-child{
+        .split-column:first-child {
 
-    border-right:0.4mm solid var(--grid);
+            border-right: 0.4mm solid var(--grid);
 
-}
+        }
 
-.split-title{
+        .split-title {
 
-    display:flex;
+            display: flex;
 
-    justify-content:center;
+            justify-content: center;
 
-    align-items:center;
+            align-items: center;
 
-    min-height:7mm;
+            min-height: 7mm;
 
-    font-weight:700;
+            font-weight: 700;
 
-    border-bottom:0.4mm solid var(--grid);
+            border-bottom: 0.4mm solid var(--grid);
 
-    background:#fafafa;
+            background: #fafafa;
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    LINHA QUÁDRUPLA
    ========================================================== */
 
-.row-four{
+        .row-four {
 
-    display:grid;
+            display: grid;
 
-    grid-template-columns:
+            grid-template-columns:
 
-        14%
-        36%
-        14%
-        36%;
+                14% 36% 14% 36%;
 
-    min-height:
+            min-height:
 
-        var(--row-height);
+                var(--row-height);
 
-    border-bottom:
+            border-bottom:
 
-        0.4mm solid var(--grid);
+                0.4mm solid var(--grid);
 
-}
+        }
 
-.row-four:last-child{
+        .row-four:last-child {
 
-    border-bottom:none;
+            border-bottom: none;
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    LINHA DUPLA (4 COLUNAS)
    ========================================================== */
 
-.row-double{
+        .row-double {
 
-    display:grid;
+            display: grid;
 
-    grid-template-columns:
+            grid-template-columns:
 
-    15%
-    35%
-    15%
-    35%;
+                15% 35% 15% 35%;
 
-align-items:center;
+            align-items: center;
 
-    min-height:
+            min-height:
 
-        var(--row-height);
+                var(--row-height);
 
-    border-bottom:
+            border-bottom:
 
-        0.4mm solid var(--grid);
+                0.4mm solid var(--grid);
 
-}
+        }
 
-.row-double:last-child{
+        .row-double:last-child {
 
-    border-bottom:none;
+            border-bottom: none;
 
-}
+        }
 
-/*
+        /*
 Linha dupla
 
 Receberá futuramente dois horários
 (Regular / Domingo).
 */
 
-.row-double{
+        .row-double {
 
-    --time-column:40%;
+            --time-column: 40%;
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    LINHA DE OBSERVAÇÃO
 ========================================================== */
 
-.row-note{
+        .row-note {
 
-    display:block;
+            display: block;
 
-    min-height:auto;
+            min-height: auto;
 
-    padding:
+            padding:
 
-        2mm
-        3mm;
+                2mm 3mm;
 
-    border-bottom:
+            border-bottom:
 
-        1px solid
-        var(--grid);
+                1px solid var(--grid);
 
-    font-size:
+            font-size:
 
-        var(--font-small);
+                var(--font-small);
 
-    font-style:italic;
+            font-style: italic;
 
-    line-height:1.4;
+            line-height: 1.4;
 
-}
+        }
 
-/* ==========================================================
+        /* ==========================================================
    LINHA DE REMISSÃO
 
    Utilizada para indicar referências,
@@ -1050,35 +1014,33 @@ Receberá futuramente dois horários
 
 ========================================================== */
 
-.row-reference{
+        .row-reference {
 
-    display:block;
+            display: block;
 
-    padding:
+            padding:
 
-        2mm
-        3mm;
+                2mm 3mm;
 
-    border-left:
+            border-left:
 
-        3px solid
-        var(--grid);
+                3px solid var(--grid);
 
-    margin:
+            margin:
 
-        1mm 0;
+                1mm 0;
 
-    font-size:
+            font-size:
 
-        var(--font-small);
+                var(--font-small);
 
-    line-height:1.4;
+            line-height: 1.4;
 
-}
+        }
 
-        .row:last-child{
+        .row:last-child {
 
-            border-bottom:none;
+            border-bottom: none;
 
         }
 
@@ -1086,76 +1048,76 @@ Receberá futuramente dois horários
            HORÁRIO
         ========================================================== */
 
-        .time{
+        .time {
 
-            display:flex;
+            display: flex;
 
-            align-items:center;
+            align-items: center;
 
-            justify-content:center;
+            justify-content: center;
 
             border-right:
-    0.4mm solid var(--grid);
+                0.4mm solid var(--grid);
 
-            font-size:var(--font-time);
+            font-size: var(--font-time);
 
-            font-weight:700;
+            font-weight: 700;
 
-            white-space:nowrap;
+            white-space: nowrap;
 
         }
 
 
 
-/* ==========================================================
+        /* ==========================================================
    HORÁRIO DUPLO
 ========================================================== */
 
-.time-double{
+        .time-double {
 
-    display:flex;
+            display: flex;
 
-    flex-direction:column;
+            flex-direction: column;
 
-    align-items:center;
+            align-items: center;
 
-    justify-content:center;
+            justify-content: center;
 
-    gap:0.5mm;
+            gap: 0.5mm;
 
-    border-right:0.4mm solid var(--grid);
+            border-right: 0.4mm solid var(--grid);
 
-}
+        }
 
-.regular-time{
+        .regular-time {
 
-    font-weight:700;
+            font-weight: 700;
 
-}
+        }
 
-.sunday-time{
+        .sunday-time {
 
-    font-size:90%;
+            font-size: 90%;
 
-}
+        }
 
         /* ==========================================================
            ATIVIDADE
         ========================================================== */
 
-        .activity{
+        .activity {
 
-            display:flex;
+            display: flex;
 
-            align-items:center;
+            align-items: center;
 
-            padding-left:var(--padding-row-left);
+            padding-left: var(--padding-row-left);
 
-            padding-right:var(--padding-row-right);
+            padding-right: var(--padding-row-right);
 
-            font-size:var(--font-activity);
+            font-size: var(--font-activity);
 
-            line-height:1.2;
+            line-height: 1.2;
 
         }
 
@@ -1165,53 +1127,53 @@ Receberá futuramente dois horários
            ESTILOS DAS ATIVIDADES
         ========================================================== */
 
-        .normal{
+        .normal {
 
-            color:var(--ink);
+            color: var(--ink);
 
-            font-weight:400;
-
-        }
-
-        .study{
-
-            color:var(--green);
-
-            font-weight:700;
+            font-weight: 400;
 
         }
 
-        .work{
+        .study {
 
-            color:var(--red);
+            color: var(--green);
 
-            font-weight:700;
-
-        }
-
-        .special{
-
-            color:var(--blue);
-
-            font-weight:700;
+            font-weight: 700;
 
         }
 
-        .office{
+        .work {
 
-            font-weight:700;
+            color: var(--red);
 
-            text-transform:uppercase;
-
-            letter-spacing:.04em;
+            font-weight: 700;
 
         }
 
-        .office.missa{
+        .special {
 
-            text-transform:none;
+            color: var(--blue);
 
-            letter-spacing:0;
+            font-weight: 700;
+
+        }
+
+        .office {
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: .04em;
+
+        }
+
+        .office.missa {
+
+            text-transform: none;
+
+            letter-spacing: 0;
 
         }
 
@@ -1219,1037 +1181,1030 @@ Receberá futuramente dois horários
            RODAPÉ
         ========================================================== */
 
-        .footer{
-    position: absolute;
+        .footer {
+            position: absolute;
 
-    right: 14mm;
-    bottom: 8mm;
+            right: 14mm;
+            bottom: 8mm;
 
-    display: flex;
-    align-items: center;
-    gap: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
 
-    font-size: var(--font-footer);
-    letter-spacing: .08em;
-    color: #6a6a6a;
+            font-size: var(--font-footer);
+            letter-spacing: .08em;
+            color: #6a6a6a;
 
-    line-height: 1;
-}
+            line-height: 1;
+        }
 
-.footer-logo{
-    width: 30px;
-    height: 30px;
+        .footer-logo {
+            width: 30px;
+            height: 30px;
 
-    object-fit: contain;
-    flex-shrink: 0;
+            object-fit: contain;
+            flex-shrink: 0;
 
-    opacity: .90;
-}
+            opacity: .90;
+        }
 
         /* ==========================================================
            IMPRESSÃO
         ========================================================== */
 
-/* ==========================================================
+        /* ==========================================================
    IMPRESSÃO
 ========================================================== */
 
-@page{
+        @page {
 
-    size:A4 portrait;
+            size: A4 portrait;
 
-    margin:0;
+            margin: 0;
 
-}
+        }
 
-@media print{
+        @media print {
 
-    *{
+            * {
 
-        -webkit-print-color-adjust:exact;
-        print-color-adjust:exact;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
 
-    }
+            }
 
-#editor-menu,
-#editor-window{
+            #editor-menu,
+            #editor-window {
 
-    display:none !important;
+                display: none !important;
 
-}
+            }
 
-    html{
+            html {
 
-        background:white;
+                background: white;
 
-    }
+            }
 
-    body{
+            body {
 
-        background:white;
+                background: white;
 
-        padding:0;
+                padding: 0;
 
-    }
+            }
 
-    .page{
+            .page {
 
-        margin:0;
+                margin: 0;
 
-        box-shadow:none;
+                box-shadow: none;
 
-    }
+            }
 
-    .schedule{
+            .schedule {
 
-        border-collapse:collapse;
+                border-collapse: collapse;
 
-    }
+            }
 
-    .time{
+            .time {
 
-        border-right:0.4mm solid var(--grid);
+                border-right: 0.4mm solid var(--grid);
 
-    }
+            }
 
-    .toolbar{
+            .toolbar {
 
-        display:none;
+                display: none;
 
-    }
+            }
 
-    #editor-menu{
+            #editor-menu {
 
-        display:none !important;
+                display: none !important;
 
-    }
+            }
 
-    #editor-menu{
+            #editor-menu {
 
-        display:none !important;
+                display: none !important;
 
-    }
+            }
 
-}        
-
+        }
     </style>
 
 </head>
 
 
-     <body>
+<body>
 
-<div id="editor-menu">
+    <div id="editor-menu">
 
-    <h2>Editor da Engine M4</h2>
+        <h2>Editor da Engine M4</h2>
 
-    <p>Escolha o quadro que deseja editar:</p>
+        <p>Escolha o quadro que deseja editar:</p>
 
-    <select id="editor-select">
+        <select id="editor-select">
 
-        <option value="">Selecione...</option>
+            <option value="">Selecione...</option>
 
-        <option value="principal">Horário Principal</option>
+            <option value="principal">Horário Principal</option>
 
-        <option value="comum">Comum</option>
+            <option value="comum">Comum</option>
 
-        <option value="festivo">Comum Festivo</option>
+            <option value="festivo">Comum Festivo</option>
 
-        <option value="sabado">Sábado</option>
+            <option value="sabado">Sábado</option>
 
-        <option value="quinta">Primeira Quinta</option>
+            <option value="quinta">Primeira Quinta</option>
 
-        <option value="sexta">Primeira Sexta</option>
+            <option value="sexta">Primeira Sexta</option>
 
-        <option value="observacoes">Observações Gerais</option>
+            <option value="observacoes">Observações Gerais</option>
 
-    </select>
+        </select>
 
-    <button id="btnAbrir">
+        <button id="btnAbrir">
 
-        Abrir
+            Abrir
 
-    </button>
+        </button>
 
-<hr>
+        <hr>
 
-<button id="btn-print">
-    🖨 Imprimir
-</button>
+        <button id="btn-print">
+            🖨 Imprimir
+        </button>
 
-</div>
+    </div>
 
 
-<!-- ==========================================================
+    <!-- ==========================================================
      EDITOR REUTILIZÁVEL
 ========================================================== -->
 
-<div id="editor-window" style="display:none;">
+    <div id="editor-window" style="display:none;">
 
-    <button id="editor-back">
-        ← Voltar
-    </button>
+        <button id="editor-back">
+            ← Voltar
+        </button>
 
-    <h2 id="editor-title">
-        Editor
-    </h2>
+        <h2 id="editor-title">
+            Editor
+        </h2>
 
-    <textarea
-        id="editor-text"
-        spellcheck="false">
+        <textarea id="editor-text" spellcheck="false">
     </textarea>
 
-    <div id="editor-actions">
+        <div id="editor-actions">
 
-        <button id="editor-update">
-            Atualizar
-        </button>
+            <button id="editor-update">
+                Atualizar
+            </button>
 
-        <button id="editor-cancel">
-            Cancelar
-        </button>
+            <button id="editor-cancel">
+                Cancelar
+            </button>
 
-    </div>
-
-</div>
-
-<main
-class="page"
-id="engine-page">
-
-        
-
-        <header
-    class="header"
-    id="document-header">
-
-    <div class="document-title">
-
-        Horário Comunitário
+        </div>
 
     </div>
 
-</header>
-         <section
-    class="content"
-    id="schedule-container">
-<div class="top-layout">
+    <main class="page" id="engine-page">
 
-    <div class="top-left">
-           <!-- ==========================================================
+
+
+        <header class="header" id="document-header">
+
+            <div class="document-title">
+
+                Horário Comunitário
+
+            </div>
+
+        </header>
+        <section class="content" id="schedule-container">
+            <div class="top-layout">
+
+                <div class="top-left">
+                    <!-- ==========================================================
                  QUADRO 01
             =========================================================== -->
 
-            <article class="schedule schedule-wide">
+                    <article class="schedule schedule-wide">
 
-                <div class="schedule-title">
+                        <div class="schedule-title">
 
-                    REGULAR / DOMINGO
+                            REGULAR / DOMINGO
+
+                        </div>
+
+
+                        <div class="rows" id="main-schedule">
+
+                            <div class="row-four">
+
+                                <div class="time-double">
+                                    <span class="regular-time">04:00</span>
+                                    <span class="sunday-time">03:45</span>
+                                </div>
+
+                                <div class="activity office">MATINAS</div>
+
+                                <div class="time">12:15</div>
+
+                                <div class="activity normal">Almoço e Louça</div>
+
+                            </div>
+
+                            <div class="row-four">
+
+                                <div class="time-double">
+                                    <span class="regular-time">05:15</span>
+                                    <span class="sunday-time">07:10</span>
+                                </div>
+
+                                <div class="activity normal">Lectio</div>
+
+                                <div class="time">13:20</div>
+
+                                <div class="activity normal">Descanso</div>
+
+                            </div>
+
+                            <div class="row-four">
+
+                                <div class="time">05:57</div>
+
+                                <div class="activity office">Laudes e Oração (Missas)</div>
+
+                                <div class="time">14:05</div>
+
+                                <div class="activity office">NOA</div>
+
+                            </div>
+
+                            <div class="row-four">
+
+                                <div class="time">07:00</div>
+
+                                <div class="activity normal">Descasca</div>
+
+                                <div class="time">14:20</div>
+
+                                <div class="activity special">Próprio da Tarde</div>
+
+                            </div>
+
+                            <div class="row-four">
+
+                                <div class="time-double">
+                                    <span class="regular-time">07:10</span>
+                                    <span class="sunday-time">05:15</span>
+                                </div>
+
+                                <div class="activity normal">Café da Manhã</div>
+
+                                <div class="time">16:30</div>
+
+                                <div class="activity normal">Livre</div>
+
+                            </div>
+
+                            <div class="row-four">
+
+                                <div class="time">07:40</div>
+
+                                <div class="activity office">Prima e Refeitório</div>
+
+                                <div class="time-double">
+                                    <span class="regular-time">17:00</span>
+                                    <span class="sunday-time">17:15</span>
+                                </div>
+
+                                <div class="activity office">Vésperas* e Oração ou Bênção</div>
+
+                            </div>
+
+                            <div class="row-four">
+
+                                <div class="time">08:30</div>
+
+                                <div class="activity special">Próprio da Manhã</div>
+
+                                <div class="time">18:00</div>
+
+                                <div class="activity normal">Jantar e Louça</div>
+
+                            </div>
+
+                            <div class="row-four">
+
+                                <div class="time-double">
+                                    <span class="regular-time">10:45</span>
+                                    <span class="sunday-time">09:00</span>
+                                </div>
+
+                                <div class="activity office missa">Terça e Missa</div>
+
+                                <div class="time">18:40</div>
+
+                                <div class="activity office">Capítulo</div>
+
+                            </div>
+
+                            <div class="row-four">
+
+                                <div class="time">12:00</div>
+
+                                <div class="activity office">Sexta</div>
+
+                                <div class="time">19:00</div>
+
+                                <div class="activity office">Completas e Livre</div>
+
+                            </div>
+
+                            <div class="row-four">
+
+                                <div class="time"></div>
+
+                                <div class="activity"></div>
+
+                                <div class="time">20:30</div>
+
+                                <div class="activity normal">Dormir</div>
+
+                            </div>
+                        </div>
+
+                    </article>
 
                 </div>
-                  
 
-                <div
-                 class="rows"
-                 id="main-schedule">
+                <div class="top-right">
 
-<div class="row-four">
+                    </article>
 
-    <div class="time-double">
-        <span class="regular-time">04:00</span>
-        <span class="sunday-time">03:45</span>
-    </div>
+                    <article class="schedule schedule-notes frame-span-1">
 
-    <div class="activity office">MATINAS</div>
+                        <div class="schedule-title">
 
-    <div class="time">12:15</div>
+                            REGRAS
 
-    <div class="activity normal">Almoço e Louça</div>
+                        </div>
 
-</div>
+                        <div class="notes-body">
 
-<div class="row-four">
+                            <ol>
 
-    <div class="time-double">
-        <span class="regular-time">05:15</span>
-        <span class="sunday-time">07:10</span>
-    </div>
+                                <li>
+                                    Este horário é obrigatório, exceto aos irmãos com trabalhos ou enfermidades
+                                    especiais.
+                                <li>
+                                    Os estudantes diferenciam-se apenas pelos próprios da manhã e da tarde, assim como
+                                    noviços, professos, etc.
+                                </li>
 
-    <div class="activity normal">Lectio</div>
+                                <li>
+                                    É proibida qualquer compensação de horários. Se uma atividade (provas, TMI etc.) não
+                                    puder ocorrer em determinado dia, considera-se dispensada, sem alterar os horários
+                                    seguintes.
 
-    <div class="time">13:20</div>
+                                <li>
+                                    Se não for dia de preceito com missa às 16h, Vésperas será sempre às 17h.
 
-    <div class="activity normal">Descanso</div>
+                                </li>
 
-</div>
+                            </ol>
 
-<div class="row-four">
+                        </div>
 
-    <div class="time">05:57</div>
+                    </article>
 
-    <div class="activity office">Laudes e Oração (Missas)</div>
-
-    <div class="time">14:05</div>
-
-    <div class="activity office">NOA</div>
-
-</div>
-
-<div class="row-four">
-
-    <div class="time">07:00</div>
-
-    <div class="activity normal">Descasca</div>
-
-    <div class="time">14:20</div>
-
-    <div class="activity special">Próprio da Tarde</div>
-
-</div>
-
-<div class="row-four">
-
-    <div class="time-double">
-        <span class="regular-time">07:10</span>
-        <span class="sunday-time">05:15</span>
-    </div>
-
-    <div class="activity normal">Café da Manhã</div>
-
-    <div class="time">16:30</div>
-
-    <div class="activity normal">Livre</div>
-
-</div>
-
-<div class="row-four">
-
-    <div class="time">07:40</div>
-
-    <div class="activity office">Prima e Refeitório</div>
-
-    <div class="time-double">
-        <span class="regular-time">17:00</span>
-        <span class="sunday-time">17:15</span>
-    </div>
-
-    <div class="activity office">Vésperas* e Oração ou Bênção</div>
-
-</div>
-
-<div class="row-four">
-
-    <div class="time">08:30</div>
-
-    <div class="activity special">Próprio da Manhã</div>
-
-    <div class="time">18:00</div>
-
-    <div class="activity normal">Jantar e Louça</div>
-
-</div>
-
-<div class="row-four">
-
-    <div class="time-double">
-        <span class="regular-time">10:45</span>
-        <span class="sunday-time">09:00</span>
-    </div>
-
-    <div class="activity office missa">Terça e Missa</div>
-
-    <div class="time">18:40</div>
-
-    <div class="activity office">Capítulo</div>
-
-</div>
-
-<div class="row-four">
-
-    <div class="time">12:00</div>
-
-    <div class="activity office">Sexta</div>
-
-    <div class="time">19:00</div>
-
-    <div class="activity office">Completas e Livre</div>
-
-</div>
-
-<div class="row-four">
-
-    <div class="time"></div>
-
-    <div class="activity"></div>
-
-    <div class="time">20:30</div>
-
-    <div class="activity normal">Dormir</div>
-
-</div>
                 </div>
 
-</article>
+            </div>
 
-    </div>
+            <div class="bottom-layout">
 
-    <div class="top-right">
+                <div class="left-column">
 
-</article>
-
-<article class="schedule schedule-notes frame-span-1">
-    
-    <div class="schedule-title">
-
-        REGRAS
-
-    </div>
-
-<div class="notes-body">
-
-    <ol>
-
-        <li>
-         Este horário é obrigatório, exceto aos irmãos com trabalhos ou enfermidades especiais.        
-         <li>
-          Os estudantes diferenciam-se apenas pelos próprios da manhã e da tarde, assim como noviços, professos, etc.
-         </li>
-
-        <li>
-         É proibida qualquer compensação de horários. Se uma atividade (provas, TMI etc.) não puder ocorrer em determinado dia, considera-se dispensada, sem alterar os horários seguintes.
-
-         <li>
-            Se não for dia de preceito com missa às 16h, Vésperas será sempre às 17h.
-
-        </li>
-
-    </ol>
-
-</div>
-
-</article>
-
-    </div>
-
-</div>
-
-<div class="bottom-layout">
-
-    <div class="left-column">
-
-        <!-- ==========================================================
+                    <!-- ==========================================================
              COMUM
         =========================================================== -->
 
-        <article class="schedule schedule-wide">
+                    <article class="schedule schedule-wide">
 
-            <div class="schedule-title">
-                COMUM
-            </div>
+                        <div class="schedule-title">
+                            COMUM
+                        </div>
 
-            <div class="rows">
+                        <div class="rows">
 
-                <div class="rows-split">
+                            <div class="rows-split">
 
-    <div class="split-column">
+                                <div class="split-column">
 
-        <div class="split-title">
-            Manhã
-        </div>
+                                    <div class="split-title">
+                                        Manhã
+                                    </div>
 
-        <div class="row">
-            <div class="time">08:30</div>
-            <div class="activity">Encargos</div>
-        </div>
+                                    <div class="row">
+                                        <div class="time">08:30</div>
+                                        <div class="activity">Encargos</div>
+                                    </div>
 
-        <div class="row">
-            <div class="time">09:10</div>
-            <div class="activity">Aula</div>
-        </div>
+                                    <div class="row">
+                                        <div class="time">09:10</div>
+                                        <div class="activity">Aula</div>
+                                    </div>
 
-        <div class="row">
-            <div class="time">09:50</div>
-            <div class="activity">Estudo ou Prova até 10:30</div>
-        </div>
+                                    <div class="row">
+                                        <div class="time">09:50</div>
+                                        <div class="activity">Estudo ou Prova até 10:30</div>
+                                    </div>
 
-        <div class="row-note">
+                                    <div class="row-note">
 
-            * QUARTA:<br>
-            TMI das 08:30 até 10:15
+                                        * QUARTA:<br>
+                                        TMI das 08:30 até 10:15
 
-        </div>
+                                    </div>
 
-    </div>
+                                </div>
 
-    <div class="split-column">
+                                <div class="split-column">
 
-        <div class="split-title">
-            Tarde
-        </div>
+                                    <div class="split-title">
+                                        Tarde
+                                    </div>
 
-        <div class="row">
-            <div class="time">14:20</div>
-            <div class="activity">Encargos ou Passeio (SEG)</div>
-        </div>
+                                    <div class="row">
+                                        <div class="time">14:20</div>
+                                        <div class="activity">Encargos ou Passeio (SEG)</div>
+                                    </div>
 
-        <div class="row">
-            <div class="time">14:15</div>
-            <div class="activity">Livre</div>
-        </div>
+                                    <div class="row">
+                                        <div class="time">14:15</div>
+                                        <div class="activity">Livre</div>
+                                    </div>
 
-        <div class="row-note">
+                                    <div class="row-note">
 
-            * TER, QUA, SEX:<br>
-            TMI das 14:20 às 16:30
+                                        * TER, QUA, SEX:<br>
+                                        TMI das 14:20 às 16:30
 
-        </div>
+                                    </div>
 
-    </div>
+                                </div>
 
-</div>
+                            </div>
 
-            </div>
+                        </div>
 
-        </article>
+                    </article>
 
 
-        <!-- ==========================================================
+                    <!-- ==========================================================
              COMUM FESTIVO
         =========================================================== -->
 
-        <article class="schedule schedule-wide">
+                    <article class="schedule schedule-wide">
 
-            <div class="schedule-title">
-                COMUM FESTIVO
-            </div>
+                        <div class="schedule-title">
+                            COMUM FESTIVO
+                        </div>
 
-            <div class="rows">
+                        <div class="rows">
 
-                <div class="rows-split">
+                            <div class="rows-split">
 
-    <div class="split-column">
+                                <div class="split-column">
 
-        <div class="split-title">
+                                    <div class="split-title">
 
-            Manhã (1ª e 2ª Ordem)
+                                        Manhã (1ª e 2ª Ordem)
 
-        </div>
+                                    </div>
 
-        <div class="row">
+                                    <div class="row">
 
-            <div class="time">
-                08:30
-            </div>
+                                        <div class="time">
+                                            08:30
+                                        </div>
 
-            <div class="activity">
+                                        <div class="activity">
 
-                Livre
+                                            Livre
 
-            </div>
+                                        </div>
 
-        </div>
+                                    </div>
 
-        <div class="row">
+                                    <div class="row">
 
-            <div class="time">
-                10:00
-            </div>
+                                        <div class="time">
+                                            10:00
+                                        </div>
 
-            <div class="activity office">
+                                        <div class="activity office">
 
-                Terça e Missa Cantada ou
+                                            Terça e Missa Cantada ou
 
-            </div>
+                                        </div>
 
-        </div>
+                                    </div>
 
-        <div class="row">
+                                    <div class="row">
 
-            <div class="time">
-                10:45
-            </div>
+                                        <div class="time">
+                                            10:45
+                                        </div>
 
-            <div class="activity office">
+                                        <div class="activity office">
 
-                Terça e Missa Recitada
+                                            Terça e Missa Recitada
 
-            </div>
+                                        </div>
 
-        </div>
+                                    </div>
 
-    </div>
+                                </div>
 
-    <div class="split-column">
+                                <div class="split-column">
 
-        <div class="split-title">
+                                    <div class="split-title">
 
-            Tarde (1ª Ordem)
+                                        Tarde (1ª Ordem)
 
-        </div>
+                                    </div>
 
-        <div class="row">
+                                    <div class="row">
 
-            <div class="time">
-                14:20
-            </div>
+                                        <div class="time">
+                                            14:20
+                                        </div>
 
-            <div class="activity">
+                                        <div class="activity">
 
-                Livre
+                                            Livre
 
-            </div>
+                                        </div>
 
-        </div>
+                                    </div>
 
-        <div class="row">
+                                    <div class="row">
 
-            <div class="time">
-                17:00
-            </div>
+                                        <div class="time">
+                                            17:00
+                                        </div>
 
-            <div class="activity office">
+                                        <div class="activity office">
 
-                Vésperas ou
+                                            Vésperas ou
 
-            </div>
+                                        </div>
 
-        </div>
+                                    </div>
 
-        <div class="row-note">
+                                    <div class="row-note">
 
-            * Se for dia de preceito,
+                                        * Se for dia de preceito,
 
-            <br>
+                                        <br>
 
-            Vésperas às 17:15.
+                                        Vésperas às 17:15.
 
-        </div>
+                                    </div>
 
-    </div>
+                                </div>
 
-</div>
+                            </div>
 
-        </article>
+                    </article>
 
-    </div>
+                </div>
 
-    <div class="right-column">
+                <div class="right-column">
 
-        <!-- ==========================================================
+                    <!-- ==========================================================
              SÁBADO
         =========================================================== -->
 
-        <article class="schedule">
+                    <article class="schedule">
 
-            <div class="schedule-title">
-                SÁBADO
-            </div>
+                        <div class="schedule-title">
+                            SÁBADO
+                        </div>
 
-            <div class="rows">
+                        <div class="rows">
 
-    <div class="row">
+                            <div class="row">
 
-        <div class="time">
-            08:30
-        </div>
+                                <div class="time">
+                                    08:30
+                                </div>
 
-        <div class="activity">
+                                <div class="activity">
 
-            Limpeza de Cela
+                                    Limpeza de Cela
 
-        </div>
+                                </div>
 
-    </div>
+                            </div>
 
-    <div class="row">
+                            <div class="row">
 
-        <div class="time">
-            ---
-        </div>
+                                <div class="time">
+                                    ---
+                                </div>
 
-        <div class="activity">
+                                <div class="activity">
 
-            Tonsura (se houver)
+                                    Tonsura (se houver)
 
-        </div>
+                                </div>
 
-    </div>
+                            </div>
 
-    <div class="row">
+                            <div class="row">
 
-        <div class="time">
-            ---
-        </div>
+                                <div class="time">
+                                    ---
+                                </div>
 
-        <div class="activity">
+                                <div class="activity">
 
-            Encargos até 10:30
+                                    Encargos até 10:30
 
-        </div>
+                                </div>
 
-    </div>
+                            </div>
 
-</div>
+                        </div>
 
-        </article>
+                    </article>
 
-<!-- ==========================================================
+                    <!-- ==========================================================
      PRIMEIRA QUINTA
 =========================================================== -->
 
-<article class="schedule">
+                    <article class="schedule">
 
-    <div class="schedule-title">
-        PRIMEIRA QUINTA
-    </div>
+                        <div class="schedule-title">
+                            PRIMEIRA QUINTA
+                        </div>
 
-    <div class="rows">
+                        <div class="rows">
 
-        <div class="row">
+                            <div class="row">
 
-            <div class="time">
-                08:30
-            </div>
+                                <div class="time">
+                                    08:30
+                                </div>
 
-            <div class="activity">
-                Encargos
-            </div>
+                                <div class="activity">
+                                    Encargos
+                                </div>
 
-        </div>
+                            </div>
 
-        <div class="row">
+                            <div class="row">
 
-            <div class="time">
-                09:40
-            </div>
+                                <div class="time">
+                                    09:40
+                                </div>
 
-            <div class="activity">
-                Hora Santa até a Estação
-            </div>
+                                <div class="activity">
+                                    Hora Santa até a Estação
+                                </div>
 
-        </div>
+                            </div>
 
-    </div>
+                        </div>
 
-</article>
+                    </article>
 
-        <!-- ==========================================================
+                    <!-- ==========================================================
              PRIMEIRA SEXTA
         =========================================================== -->
 
-        <article class="schedule">
+                    <article class="schedule">
 
-            <div class="schedule-title">
-                PRIMEIRA SEXTA
+                        <div class="schedule-title">
+                            PRIMEIRA SEXTA
+                        </div>
+
+                        <div class="rows">
+
+                            <div class="row">
+
+                                <div class="time">
+
+                                    Manhã
+
+                                </div>
+
+                                <div class="activity">
+
+                                    Comum Festivo
+
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+
+                                <div class="time">
+
+                                    Tarde
+
+                                </div>
+
+                                <div class="activity">
+
+                                    14:20 – Noa com Exposição
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
             </div>
-
-            <div class="rows">
-
-    <div class="row">
-
-        <div class="time">
-
-            Manhã
-
-        </div>
-
-        <div class="activity">
-
-            Comum Festivo
-
-        </div>
-
-    </div>
-
-    <div class="row">
-
-        <div class="time">
-
-            Tarde
-
-        </div>
-
-        <div class="activity">
-
-            14:20 – Noa com Exposição
-
-        </div>
-
-    </div>
-
-</div>
-
-        </article>
-
-    </div>
-
-</div>
 
         </section>
 
-<footer class="footer" id="document-footer">
-    <img src="Imagens/logo_alce.png" class="footer-logo" alt="ALCE">
-    <span>BMM • MODELO 4 • BETA</span>
-</footer>
+        <footer class="footer" id="document-footer">
+            <img src="Imagens/logo_alce.png" class="footer-logo" alt="ALCE">
+            <span>BMM • MODELO 4 • BETA</span>
+        </footer>
 
-       </main>
+    </main>
 
     <script>
 
         "use strict";
-        
+
         alert("Início do script");
 
-/* ======================================================
-   ENGINE
-====================================================== */
+        /* ======================================================
+           ENGINE
+        ====================================================== */
 
-const engine = {
+        const engine = {
 
-    version: "4.0.3",
+            version: "4.0.3",
 
-    project: "BMM",
+            project: "BMM",
 
-    document: "BMM_ENGINE_4.0.3"
+            document: "BMM_ENGINE_4.0.3"
 
-};
+        };
 
-/* ======================================================
-   RENDERIZA O QUADRO PRINCIPAL
-====================================================== */
+        /* ======================================================
+           RENDERIZA O QUADRO PRINCIPAL
+        ====================================================== */
 
 
-/*
-        html += `
-
-<div class="row-four">
-
-    <div class="time">
-        ${partes[0].trim()}
-    </div>
-
-    <div class="activity">
-        ${partes[1].trim()}
-    </div>
-
-    <div class="time">
-        ${partes[2].trim()}
-    </div>
-
-    <div class="activity">
-        ${partes[3].trim()}
-    </div>
-
-</div>`;
-
-    });
-
-    mainSchedule.innerHTML = html;
-
-}
-*/
+        /*
+                html += `
+        
+        <div class="row-four">
+        
+            <div class="time">
+                ${partes[0].trim()}
+            </div>
+        
+            <div class="activity">
+                ${partes[1].trim()}
+            </div>
+        
+            <div class="time">
+                ${partes[2].trim()}
+            </div>
+        
+            <div class="activity">
+                ${partes[3].trim()}
+            </div>
+        
+        </div>`;
+        
+            });
+        
+            mainSchedule.innerHTML = html;
+        
+        }
+        */
         Object.freeze(engine);
 
         alert("Engine criada.");
 
-/* ======================================================
-   CAMPOS EDITÁVEIS DA ENGINE
-====================================================== */
+        /* ======================================================
+           CAMPOS EDITÁVEIS DA ENGINE
+        ====================================================== */
 
-const editableFields = {
+        const editableFields = {
 
-    principal: "",
+            principal: "",
 
-    comum: "",
+            comum: "",
 
-    festivo: "",
+            festivo: "",
 
-    sabado: "",
+            sabado: "",
 
-    quinta: "",
+            quinta: "",
 
-    sexta: "",
+            sexta: "",
 
-    observacoes: ""
+            observacoes: ""
 
-};
+        };
 
-/* ======================================================
-   ESTADO DO EDITOR
-====================================================== */
+        /* ======================================================
+           ESTADO DO EDITOR
+        ====================================================== */
 
-let currentField = null;
+        let currentField = null;
 
-/* ======================================================
-   ELEMENTOS DA INTERFACE
-====================================================== */
+        /* ======================================================
+           ELEMENTOS DA INTERFACE
+        ====================================================== */
 
-const editorMenu =
-    document.getElementById("editor-menu");
+        const editorMenu =
+            document.getElementById("editor-menu");
 
-const editorWindow =
-    document.getElementById("editor-window");
+        const editorWindow =
+            document.getElementById("editor-window");
 
-const editorSelect =
-    document.getElementById("editor-select");
+        const editorSelect =
+            document.getElementById("editor-select");
 
-const editorTitle =
-    document.getElementById("editor-title");
+        const editorTitle =
+            document.getElementById("editor-title");
 
-const editorText =
-    document.getElementById("editor-text");
+        const editorText =
+            document.getElementById("editor-text");
 
-const btnAbrir =
-    document.getElementById("btnAbrir");
+        const btnAbrir =
+            document.getElementById("btnAbrir");
 
-const btnAtualizar =
-    document.getElementById("editor-update");
+        const btnAtualizar =
+            document.getElementById("editor-update");
 
-const btnCancelar =
-    document.getElementById("editor-cancel");
+        const btnCancelar =
+            document.getElementById("editor-cancel");
 
-const btnVoltar =
-    document.getElementById("editor-back");
+        const btnVoltar =
+            document.getElementById("editor-back");
 
-const btnPrint =
-    document.getElementById("btn-print");
+        const btnPrint =
+            document.getElementById("btn-print");
 
-/* ======================================================
-   CARREGA UM CAMPO NO EDITOR
-====================================================== */
+        /* ======================================================
+           CARREGA UM CAMPO NO EDITOR
+        ====================================================== */
 
-function loadField(fieldName){
+        function loadField(fieldName) {
 
-    alert("loadField executada!");
+            alert("loadField executada!");
 
-    currentField = fieldName;
+            currentField = fieldName;
 
-    editorTitle.textContent = fieldName;
+            editorTitle.textContent = fieldName;
 
-    editorText.value =
-        editableFields[fieldName] ?? "";
+            editorText.value =
+                editableFields[fieldName] ?? "";
 
-    editorMenu.style.display = "none";
+            editorMenu.style.display = "none";
 
-    editorWindow.style.display = "flex";
+            editorWindow.style.display = "flex";
 
-}
-function saveField(){
+        }
+        function saveField() {
 
-    if(currentField === null){
-        return;
-    }
+            if (currentField === null) {
+                return;
+            }
 
-    editableFields[currentField] =
-        editorText.value;
+            editableFields[currentField] =
+                editorText.value;
 
-    renderField(currentField);
+            renderField(currentField);
 
-}
+        }
 
-/* ======================================================
-   RENDERIZA UM CAMPO
-====================================================== */
+        /* ======================================================
+           RENDERIZA UM CAMPO
+        ====================================================== */
 
-function renderField(fieldName){
+        function renderField(fieldName) {
 
-   const text =
-      editableFields[fieldName];
+            const text =
+                editableFields[fieldName];
 
-    compileDocument(text);
+            compileDocument(text);
 
-    switch(fieldName){
+            switch (fieldName) {
 
-        case "principal":
+                case "principal":
 
-            console.log("Renderizar quadro principal.");
-            break;
+                    console.log("Renderizar quadro principal.");
+                    break;
 
-        case "comum":
+                case "comum":
 
-            console.log("Renderizar quadro comum.");
-            break;
+                    console.log("Renderizar quadro comum.");
+                    break;
 
-        case "festivo":
+                case "festivo":
 
-            console.log("Renderizar quadro festivo.");
-            break;
+                    console.log("Renderizar quadro festivo.");
+                    break;
 
-        case "sabado":
+                case "sabado":
 
-            console.log("Renderizar quadro sábado.");
-            break;
+                    console.log("Renderizar quadro sábado.");
+                    break;
 
-        case "quinta":
+                case "quinta":
 
-            console.log("Renderizar primeira quinta.");
-            break;
+                    console.log("Renderizar primeira quinta.");
+                    break;
 
-        case "sexta":
+                case "sexta":
 
-            console.log("Renderizar primeira sexta.");
-            break;
+                    console.log("Renderizar primeira sexta.");
+                    break;
 
-        case "observacoes":
+                case "observacoes":
 
-            console.log("Renderizar observações.");
-            break;
+                    console.log("Renderizar observações.");
+                    break;
 
-    }
+            }
 
-}
+        }
 
-/* ======================================================
-   COMPILADOR DA BMM
-====================================================== */
+        /* ======================================================
+           COMPILADOR DA BMM
+        ====================================================== */
 
-function compileDocument(text){
+        function compileDocument(text) {
 
-    console.clear();
+            console.clear();
 
-console.log("========== COMPILADOR ==========");
+            console.log("========== COMPILADOR ==========");
 
-console.log(text);
+            console.log(text);
 
-console.log("================================");
+            console.log("================================");
 
-}
+        }
 
-/* ======================================================
-   BOTÃO ABRIR
-====================================================== */
+        /* ======================================================
+           BOTÃO ABRIR
+        ====================================================== */
 
-btnAbrir.addEventListener("click", () => {
+        btnAbrir.addEventListener("click", () => {
 
-    alert("Botão funcionando.");
+            alert("Botão funcionando.");
 
-    editorMenu.style.display = "none";
+            editorMenu.style.display = "none";
 
-    editorWindow.style.display = "flex";
+            editorWindow.style.display = "flex";
 
-});
+        });
 
-function voltarMenu(){
+        function voltarMenu() {
 
-    editorWindow.style.display = "none";
+            editorWindow.style.display = "none";
 
-    editorMenu.style.display = "flex";
+            editorMenu.style.display = "flex";
 
-}
+        }
 
-editorBack.addEventListener(
-    "click",
-    voltarMenu
-);
+        editorBack.addEventListener(
+            "click",
+            voltarMenu
+        );
 
-editorCancel.addEventListener(
-    "click",
-    voltarMenu
-);
+        editorCancel.addEventListener(
+            "click",
+            voltarMenu
+        );
 
-/* ======================================================
-   EVENTOS
-====================================================== */
+        /* ======================================================
+           EVENTOS
+        ====================================================== */
 
 
     </script>
