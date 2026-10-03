@@ -149,12 +149,12 @@ button{
 
 #placa{
 
-    width:92%;
-    height:88%;
+    width:96%;
+    height:94%;
 
     display:flex;
 
-    padding:10mm;
+    padding:6mm;
 
     flex-direction:column;
 
@@ -181,36 +181,10 @@ button{
 
 #cruz{
 
-    position:relative;
-    width:8mm;
-    height:8mm;
-
-}
-
-#cruz::before,
-#cruz::after{
-
-    content:"";
-    position:absolute;
-    background:#000;
-
-}
-
-#cruz::before{
-
-    width:1.2mm;
-    height:8mm;
-    left:3.4mm;
-    top:0;
-
-}
-
-#cruz::after{
-
-    width:6mm;
-    height:1.2mm;
-    left:1mm;
-    top:2.3mm;
+    color:#000;
+    font-family:"Times New Roman", serif;
+    font-size:30px;
+    line-height:.7;
 
 }
 
@@ -349,7 +323,7 @@ button{
     <div id="placa">
 
         <div id="cabecalho" class="elemento-placa" aria-hidden="true">
-            <div id="cruz"></div>
+            <div id="cruz" aria-hidden="true">&#10013;</div>
             <span>PAX</span>
         </div>
 
