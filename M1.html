@@ -80,6 +80,41 @@
         }
 
 
+        .m1-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 0 auto 10px;
+        }
+
+        .m1-toolbar .m1-print-button {
+            display: inline-block;
+            margin: 0;
+            padding: 9px 14px;
+        }
+
+        .m1-edit-help {
+            margin: 0 auto 18px;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+        }
+
+        body.m1-editing .m1-schedule th,
+        body.m1-editing .m1-schedule td,
+        body.m1-editing .m1-note {
+            outline: 1px dashed #927b4c;
+            outline-offset: -2px;
+        }
+
+        body.m1-editing .m1-schedule th:focus,
+        body.m1-editing .m1-schedule td:focus,
+        body.m1-editing .m1-note:focus {
+            outline: 2px solid #28543d;
+            background-color: #fffbe8;
+        }
+
         /* ---------------------------------------------------------
            TABELA
            --------------------------------------------------------- */
@@ -210,10 +245,17 @@
             }
 
 
-            /* O botão não será impresso */
-
-            .m1-print-button {
+            /* Ferramentas de edição não serão impressas */
+            .m1-toolbar,
+            .m1-edit-help {
                 display: none !important;
+            }
+
+            .m1-schedule th,
+            .m1-schedule td,
+            .m1-note {
+                outline: none !important;
+                background-color: inherit;
             }
 
 
@@ -257,18 +299,16 @@
     <main class="m1-document">
 
 
-        <!-- =====================================================
-             BOTÃO DE IMPRESSÃO
-             ===================================================== -->
-
-        <button
-            type="button"
-            class="m1-print-button"
-            onclick="window.print()">
-
-            Imprimir
-
-        </button>
+        <!-- FERRAMENTAS DE EDIÇÃO E IMPRESSÃO -->
+        <div class="m1-toolbar">
+            <button type="button" class="m1-print-button" id="m1-toggle-edit" onclick="alternarEdicaoM1()">Editar conteúdo</button>
+            <button type="button" class="m1-print-button" onclick="adicionarLinhaM1()">Adicionar linha</button>
+            <button type="button" class="m1-print-button" onclick="adicionarColunaM1()">Adicionar coluna</button>
+            <button type="button" class="m1-print-button" onclick="excluirLinhaM1()">Excluir linha</button>
+            <button type="button" class="m1-print-button" onclick="excluirColunaM1()">Excluir coluna</button>
+            <button type="button" class="m1-print-button" onclick="window.print()">Imprimir</button>
+        </div>
+        <p class="m1-edit-help" id="m1-edit-help">Para alterar os textos, clique em “Editar conteúdo”. As mudanças ficam nesta página enquanto ela estiver aberta e serão incluídas na impressão.</p>
 
 
         <!-- =====================================================
@@ -556,20 +596,89 @@
          ========================================================= -->
 
     <script>
+        let m1Editando = false;
 
-        /*
-         * Botão de impressão
-         *
-         * A função nativa do navegador abre a janela de
-         * impressão. As regras @media print do CSS cuidam
-         * de esconder o botão e preparar o documento para
-         * A4 em orientação paisagem.
-         */
-
-        function imprimirM1() {
-            window.print();
+        function alternarEdicaoM1() {
+            m1Editando = !m1Editando;
+            document.body.classList.toggle("m1-editing", m1Editando);
+            document.querySelectorAll(".m1-schedule th, .m1-schedule td, .m1-note").forEach(el => {
+                el.contentEditable = m1Editando ? "true" : "false";
+                el.spellcheck = false;
+            });
+            document.getElementById("m1-toggle-edit").textContent = m1Editando ? "Concluir edição" : "Editar conteúdo";
+            document.getElementById("m1-edit-help").textContent = m1Editando
+                ? "Clique em qualquer célula ou na observação para editar o texto. Use os botões para acrescentar ou excluir linhas e colunas."
+                : "Para alterar os textos, clique em “Editar conteúdo”. As mudanças ficam nesta página enquanto ela estiver aberta e serão incluídas na impressão.";
         }
 
+        function adicionarLinhaM1() {
+            const tabela = document.querySelector(".m1-schedule");
+            const cabecalho = tabela.tHead.rows[0];
+            const totalColunas = cabecalho.cells.length;
+            const nome = prompt("Nome da nova linha (por exemplo, outro dia):");
+            if (nome === null || !nome.trim()) return;
+            const linha = tabela.tBodies[0].insertRow();
+            const rotulo = document.createElement("th");
+            rotulo.textContent = nome.trim();
+            linha.appendChild(rotulo);
+            for (let i = 1; i < totalColunas; i++) {
+                const celula = linha.insertCell();
+                celula.textContent = "";
+            }
+            if (m1Editando) {
+                linha.querySelectorAll("th, td").forEach(el => { el.contentEditable = "true"; el.spellcheck = false; });
+            }
+        }
+
+        function adicionarColunaM1() {
+            const nome = prompt("Título da nova coluna:");
+            if (nome === null || !nome.trim()) return;
+            const tabela = document.querySelector(".m1-schedule");
+            const th = document.createElement("th");
+            th.textContent = nome.trim();
+            th.contentEditable = m1Editando ? "true" : "false";
+            tabela.tHead.rows[0].appendChild(th);
+            Array.from(tabela.tBodies[0].rows).forEach(linha => {
+                const td = document.createElement("td");
+                td.textContent = "";
+                td.contentEditable = m1Editando ? "true" : "false";
+                linha.appendChild(td);
+            });
+        }
+
+        function excluirLinhaM1() {
+            const tabela = document.querySelector(".m1-schedule");
+            const linhas = Array.from(tabela.tBodies[0].rows);
+            if (!linhas.length) { alert("Não há linhas para excluir."); return; }
+            const opcoes = linhas.map((linha, i) => (i + 1) + " — " + linha.cells[0].innerText.trim()).join("\n");
+            const escolha = prompt("Digite o número da linha que deseja excluir:\n" + opcoes);
+            if (escolha === null || escolha.trim() === "") return;
+            const indice = Number(escolha);
+            if (!Number.isInteger(indice) || indice < 1 || indice > linhas.length) {
+                alert("Número de linha inválido.");
+                return;
+            }
+            linhas[indice - 1].remove();
+        }
+
+        function excluirColunaM1() {
+            const tabela = document.querySelector(".m1-schedule");
+            const cabecalho = tabela.tHead.rows[0];
+            if (cabecalho.cells.length <= 1) { alert("A tabela precisa manter ao menos uma coluna."); return; }
+            const opcoes = Array.from(cabecalho.cells).map((celula, i) => (i + 1) + " — " + celula.innerText.trim()).join("\n");
+            const escolha = prompt("Digite o número da coluna que deseja excluir:\n" + opcoes);
+            if (escolha === null || escolha.trim() === "") return;
+            const indice = Number(escolha);
+            if (!Number.isInteger(indice) || indice < 1 || indice > cabecalho.cells.length) {
+                alert("Número de coluna inválido.");
+                return;
+            }
+            if (!confirm("Excluir a coluna “" + cabecalho.cells[indice - 1].innerText.trim() + "” e todos os seus valores?")) return;
+            cabecalho.deleteCell(indice - 1);
+            Array.from(tabela.tBodies[0].rows).forEach(linha => {
+                if (linha.cells.length >= indice) linha.deleteCell(indice - 1);
+            });
+        }
     </script>
 
 
