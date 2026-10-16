@@ -1,0 +1,408 @@
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor de cards colecionáveis</title>
+<style>
+:root {
+  --card-w: 7.5cm;
+  --card-h: 10.5cm;
+  --gold: #d9b56a;
+  --dark: #111426;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #111522;
+  color: #f5f0e5;
+  font: 15px/1.4 system-ui, sans-serif;
+}
+.app {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: minmax(280px, 350px) 1fr;
+  gap: 28px;
+}
+.controls {
+  background: #1b2030;
+  border: 1px solid #42485a;
+  border-radius: 12px;
+  padding: 18px;
+}
+h1 { font-size: 1.35rem; margin-top: 0; }
+label {
+  display: block;
+  margin: 12px 0 5px;
+  color: #f1d89b;
+  font-weight: 650;
+}
+input, textarea, select {
+  width: 100%;
+  padding: 9px;
+  color: white;
+  background: #101522;
+  border: 1px solid #4c5368;
+  border-radius: 6px;
+  font: inherit;
+}
+textarea { min-height: 75px; resize: vertical; }
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+button {
+  padding: 10px;
+  border: 1px solid var(--gold);
+  border-radius: 7px;
+  background: #33264a;
+  color: #ffe8b0;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+button:hover { filter: brightness(1.15); }
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 18px;
+}
+.primary { background: #90631f; }
+.hint { color: #b9c0cf; font-size: .85rem; }
+.preview-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.stage {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 8px;
+}
+.card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  flex: none;
+  width: var(--card-w);
+  height: var(--card-h);
+  background: #111426;
+  container-type: inline-size;
+  box-shadow: 0 12px 35px #0008;
+}
+.art-window {
+  position: absolute;
+  z-index: 1;
+  left: 10%;
+  top: 9%;
+  width: 80%;
+  height: 59%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.art-window img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+.frame {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+}
+.txt {
+  position: absolute;
+  z-index: 8;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  color: #fff1c9;
+  text-shadow: 0 1px 3px #000;
+  line-height: 1.1;
+  text-align: center;
+}
+.number {
+  left: 8%; top: 4%; width: 22%; height: 3.5%;
+  font-size: 3.2cqw; font-weight: 800;
+}
+.kind {
+  right: 8%; top: 4%; width: 30%; height: 3.5%;
+  font-size: 2.6cqw; font-weight: 800;
+  text-transform: uppercase;
+}
+.title {
+  left: 20%; top: 70.5%; width: 60%; height: 5%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 4cqw; font-weight: 800;
+}
+.description {
+  left: 17%; top: 77%; width: 66%; height: 10%;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1%;
+  font-size: 2.65cqw;
+}
+.date {
+  left: 10%; top: 90%; width: 42%; height: 3%;
+  font-size: 2.1cqw; text-align: left;
+}
+.child {
+  right: 10%; top: 90%; width: 43%; height: 3%;
+  font-size: 2.1cqw; text-align: right; font-weight: 750;
+}
+.note {
+  max-width: 520px;
+  color: #b9c0cf;
+  font-size: .85rem;
+}
+.print-sheet { display: none; }
+
+@media (max-width: 800px) {
+  .app { grid-template-columns: 1fr; padding: 12px; }
+  .preview-area { grid-row: 1; }
+}
+@page { size: A4 portrait; margin: 7mm; }
+@media print {
+  body { background: white; margin: 0; }
+  .app, .controls, .preview-title, .note { display: none !important; }
+  .print-sheet {
+    display: grid !important;
+    grid-template-columns: repeat(2, var(--print-w));
+    grid-auto-rows: var(--print-h);
+    gap: 5mm;
+    justify-content: center;
+    align-content: start;
+    width: 100%;
+  }
+  .print-card {
+    position: relative;
+    width: var(--print-w);
+    height: var(--print-h);
+    overflow: hidden;
+    break-inside: avoid;
+  }
+  .print-card .card {
+    width: 100%;
+    height: 100%;
+    box-shadow: none;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="controls">
+    <h1>Editor de cards</h1>
+    <p class="hint">
+      Edite os textos, escolha as imagens e imprima os cards em tamanho real.
+    </p>
+
+    <label for="cardSize">Dimensão da carta</label>
+    <select id="cardSize">
+      <option value="6.3">6,3 × 8,82 cm</option>
+      <option value="7.5" selected>7,5 × 10,5 cm — padrão</option>
+      <option value="8">8 × 11,2 cm</option>
+      <option value="9">9 × 12,6 cm</option>
+    </select>
+
+    <label for="frameUpload">Moldura PNG transparente</label>
+    <input id="frameUpload" type="file" accept="image/png,image/webp">
+    <p class="hint">
+      Selecione a arte da moldura. Ela ficará por cima da ilustração e dos textos.
+    </p>
+
+    <label for="artUpload">Ilustração central</label>
+    <input id="artUpload" type="file" accept="image/*">
+    <p class="hint">
+      A imagem aparece inteira, sem cortes. Para melhores resultados, use uma imagem vertical.
+    </p>
+
+    <div class="pair">
+      <div>
+        <label for="number">Número</label>
+        <input id="number" value="007" maxlength="8">
+      </div>
+      <div>
+        <label for="kind">Tipo da carta</label>
+        <input id="kind" value="Habilidade" maxlength="22">
+      </div>
+    </div>
+
+    <label for="title">Título da conquista</label>
+    <input id="title" value="Missa conventual" maxlength="50">
+
+    <label for="description">Breve explicação</label>
+    <textarea id="description" maxlength="180">Reconhece a participação atenta e respeitosa na celebração da Santa Missa.</textarea>
+
+    <div class="pair">
+      <div>
+        <label for="date">Data de recebimento</label>
+        <input id="date" value="16/10/2026" maxlength="18">
+      </div>
+      <div>
+        <label for="child">Nome da criança</label>
+        <input id="child" value="Nome da criança" maxlength="35">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="reset">Restaurar textos</button>
+      <button id="print" class="primary">Imprimir A4</button>
+      <button id="downloadHtml">Baixar HTML atualizado</button>
+    </div>
+
+    <p class="hint">
+      Impressão: selecione papel A4, escala de 100% ou tamanho real e desative
+      “ajustar à página”. A quantidade por folha depende do tamanho escolhido.
+    </p>
+  </section>
+
+  <section class="preview-area">
+    <div class="preview-title">Pré-visualização do card</div>
+    <div class="stage">
+      <div class="card" id="card">
+        <div class="art-window">
+          <img id="art" alt="Ilustração da carta">
+        </div>
+        <div class="txt number" id="vNumber">007</div>
+        <div class="txt kind" id="vKind">HABILIDADE</div>
+        <div class="txt title" id="vTitle">Missa conventual</div>
+        <div class="txt description" id="vDescription">
+          Reconhece a participação atenta e respeitosa na celebração da Santa Missa.
+        </div>
+        <div class="txt date" id="vDate">Recebida: 16/10/2026</div>
+        <div class="txt child" id="vChild">Nome da criança</div>
+        <img id="frame" class="frame" alt="Moldura decorativa">
+      </div>
+    </div>
+    <p class="note">
+      Carregue a moldura transparente para visualizar a composição completa.
+      Os textos podem precisar de pequenos ajustes de posição conforme a arte.
+    </p>
+  </section>
+</div>
+
+<div class="print-sheet" id="printSheet"></div>
+
+<script>
+const ids = ["number", "kind", "title", "description", "date", "child"];
+const card = document.getElementById("card");
+const art = document.getElementById("art");
+const frame = document.getElementById("frame");
+
+let artDefault = "";
+let frameDefault = "";
+
+function sync() {
+  for (const id of ids) {
+    const value = document.getElementById(id).value;
+    const target = document.getElementById(
+      "v" + id.charAt(0).toUpperCase() + id.slice(1)
+    );
+
+    if (id === "kind") target.textContent = value.toUpperCase();
+    else if (id === "date") target.textContent = value ? "Recebida: " + value : "";
+    else target.textContent = value;
+  }
+
+  const w = Number(document.getElementById("cardSize").value);
+  const h = w * 1.4;
+
+  document.documentElement.style.setProperty("--card-w", w + "cm");
+  document.documentElement.style.setProperty("--card-h", h + "cm");
+  document.documentElement.style.setProperty("--print-w", w + "cm");
+  document.documentElement.style.setProperty("--print-h", h + "cm");
+}
+
+ids.forEach(id => {
+  document.getElementById(id).addEventListener("input", sync);
+});
+document.getElementById("cardSize").addEventListener("change", sync);
+
+function loadImage(input, target, isFrame = false) {
+  input.addEventListener("change", event => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      target.src = reader.result;
+      if (isFrame) frameDefault = reader.result;
+      else artDefault = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+loadImage(document.getElementById("artUpload"), art);
+loadImage(document.getElementById("frameUpload"), frame, true);
+
+function makePrint() {
+  const sheet = document.getElementById("printSheet");
+  sheet.innerHTML = "";
+
+  const w = Number(document.getElementById("cardSize").value);
+  const h = w * 1.4;
+  const columns = 2;
+  const rows = Math.max(1, Math.floor(27 / h));
+  const count = columns * rows;
+
+  for (let i = 0; i < count; i++) {
+    const wrap = document.createElement("div");
+    wrap.className = "print-card";
+    const clone = card.cloneNode(true);
+    clone.removeAttribute("id");
+    wrap.appendChild(clone);
+    sheet.appendChild(wrap);
+  }
+}
+
+document.getElementById("print").addEventListener("click", () => {
+  makePrint();
+  window.print();
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  document.getElementById("number").value = "007";
+  document.getElementById("kind").value = "Habilidade";
+  document.getElementById("title").value = "Missa conventual";
+  document.getElementById("description").value =
+    "Reconhece a participação atenta e respeitosa na celebração da Santa Missa.";
+  document.getElementById("date").value = "16/10/2026";
+  document.getElementById("child").value = "Nome da criança";
+  sync();
+});
+
+document.getElementById("downloadHtml").addEventListener("click", () => {
+  const source = "<!doctype html>\n" + document.documentElement.outerHTML;
+  const blob = new Blob([source], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "editor_cards.html";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+});
+
+sync();
+</script>
+</body>
+</html>
