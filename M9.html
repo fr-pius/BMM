@@ -27,21 +27,55 @@
     }
 
     .app {
-      max-width: 1450px;
-      margin: auto;
+      width: min(1800px, 100%);
+      margin: 0 auto;
       padding: 18px;
       display: grid;
-      grid-template-columns: minmax(285px, 370px) minmax(300px, 1fr);
-      gap: 22px;
+      grid-template-columns: minmax(210px, 0.75fr) minmax(420px, 1.8fr) minmax(210px, 0.75fr);
+      grid-template-areas:
+        "left preview right"
+        "left bottom right";
+      align-items: start;
+      gap: 18px;
     }
 
-    .controls {
-      background: #1b2030;
-      border: 1px solid #42485a;
-      border-radius: 12px;
+    .panel {
+      min-width: 0;
+      background: linear-gradient(160deg, #202638, #191e2d);
+      border: 1px solid #3b4358;
+      border-radius: 14px;
       padding: 16px;
-      max-height: none;
+      box-shadow: 0 8px 24px #0002;
     }
+
+    .panel-left { grid-area: left; }
+    .panel-right { grid-area: right; }
+    .panel-bottom {
+      grid-area: bottom;
+      display: grid;
+      grid-template-columns: minmax(260px, 0.9fr) minmax(340px, 1.1fr);
+      align-items: start;
+      gap: 8px 22px;
+    }
+
+    .panel-bottom > h2:first-child { grid-column: 1; }
+    .panel-bottom .actions,
+    .panel-bottom #status,
+    .panel-bottom .hint,
+    .panel-bottom #jsonUpload { grid-column: 1; }
+    .panel-bottom > h2:last-of-type { grid-column: 2; grid-row: 1; }
+    .panel-bottom .selection-tools {
+      grid-column: 2;
+      grid-row: 2 / span 4;
+      width: 100%;
+      max-width: none;
+    }
+    .panel-bottom .editor-help { grid-column: 2; grid-row: 6; }
+
+    .panel h1 { color: #fff4d6; }
+    .panel h2 { margin-top: 14px; }
+    .panel label { overflow-wrap: anywhere; }
+    .panel input[type="checkbox"] { width: auto; }
 
     h1 {
       font-size: 1.3rem;
@@ -118,12 +152,32 @@
     }
 
     .preview-area {
+      grid-area: preview;
       min-width: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-self: center;
       gap: 10px;
+      padding-top: 0;
     }
+
+    .preview-title {
+      max-width: 100%;
+      color: #d8deec;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .selection-tools {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid #3b4358;
+      border-radius: 10px;
+      background: #151a28;
+    }
+
+    .editor-help { margin: 8px 0 0; color: #b9c0cf; font-size: 0.84rem; }
 
     .stage {
       width: 100%;
@@ -141,10 +195,23 @@
       flex: none;
       width: var(--cw);
       height: var(--ch);
+      /* Mantém as bordas externas da carta fora do preenchimento ampliado. */
       background: #111426;
       container-type: inline-size;
       box-shadow: 0 12px 35px #0008;
       touch-action: pan-y;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      z-index: 0;
+      left: 8%;
+      top: 8%;
+      width: 84%;
+      height: 84%;
+      background: var(--art-bg, #30213f);
+      pointer-events: none;
     }
 
     .art-window {
@@ -187,6 +254,8 @@
       color: #fff1c9;
       text-shadow: 0 1px 3px #000;
       line-height: 1.1;
+      display: grid;
+      place-items: center;
       text-align: center;
       white-space: pre-wrap;
       cursor: move;
@@ -241,9 +310,6 @@
       top: 70.5%;
       width: 60%;
       height: 5%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-size: 4cqw;
       font-weight: 800;
     }
@@ -253,9 +319,6 @@
       top: 77%;
       width: 66%;
       height: 10%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       padding: 1%;
       font-size: 2.65cqw;
     }
@@ -266,7 +329,6 @@
       width: 42%;
       height: 3%;
       font-size: 2.1cqw;
-      text-align: left;
     }
 
     .child {
@@ -275,7 +337,6 @@
       width: 37%;
       height: 3%;
       font-size: 2.1cqw;
-      text-align: right;
       font-weight: 750;
     }
 
@@ -311,19 +372,29 @@
       margin: 7mm;
     }
 
-    @media (max-width: 850px) {
+    @media (max-width: 1180px) {
       .app {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(220px, 1fr) minmax(300px, auto);
+        grid-template-areas:
+          "preview preview"
+          "left right"
+          "bottom bottom";
+      }
+      .preview-area { grid-row: 1; }
+      .panel-bottom { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "preview" "left" "right" "bottom";
         padding: 10px;
+        gap: 12px;
       }
-
-      .preview-area {
-        grid-row: 1;
-      }
-
-      .controls {
-        max-height: none;
-      }
+      .preview-area { width: 100%; }
+      .panel-bottom { display: block; }
+      .panel-bottom .selection-tools { margin-top: 12px; }
+      .panel { padding: 13px; }
     }
 
     @media print {
@@ -381,7 +452,7 @@
 </head>
 <body>
   <main class="app">
-    <section class="controls">
+    <section class="panel panel-left">
       <h1>Editor de cartas — M9</h1>
       <p class="hint">
         Edite os campos e, na pré-visualização, clique em uma caixa de texto
@@ -418,13 +489,36 @@
       <input id="artUpload" type="file" accept="image/*">
       <p class="hint">A ilustração é exibida inteira, sem cortes.</p>
 
-      <label for="artBg">Cor de preenchimento da janela</label>
+      <label for="autoArtBg">
+        <input id="autoArtBg" type="checkbox" checked>
+        Detectar automaticamente a cor da ilustração central
+      </label>
+      <label for="artBg">Cor de preenchimento (ajuste manual)</label>
       <input id="artBg" type="color" value="#30213f">
       <p class="hint">
-        Preenche os pequenos espaços ao redor da ilustração e também aparece
-        na impressão.
+        A cor automática é estimada pelos pixels das bordas da ilustração central. Desmarque a opção acima para escolher uma cor manual.
       </p>
+    </section>
 
+    <section class="preview-area">
+      <div class="preview-title">Pré-visualização — clique numa caixa para selecioná-la</div>
+      <div class="stage">
+        <div class="card" id="card">
+          <div class="art-window">
+            <img id="art" alt="Ilustração da carta">
+          </div>
+          <div class="txt number" id="vNumber" data-field="number">007<span class="handle"></span></div>
+          <div class="txt kind" id="vKind" data-field="kind">HABILIDADE<span class="handle"></span></div>
+          <div class="txt title" id="vTitle" data-field="title">Missa conventual<span class="handle"></span></div>
+          <div class="txt description" id="vDescription" data-field="description">Reconhece a participação atenta e respeitosa na celebração da Santa Missa.<span class="handle"></span></div>
+          <div class="txt date" id="vDate" data-field="date">Recebida: 16/10/2026<span class="handle"></span></div>
+          <div class="txt child" id="vChild" data-field="child">Nome da criança<span class="handle"></span></div>
+          <img id="frame" class="frame" alt="Moldura decorativa">
+        </div>
+      </div>
+    </section>
+
+    <section class="panel panel-right">
       <h2>Conteúdo da carta</h2>
       <div class="pair">
         <div>
@@ -454,6 +548,25 @@
         </div>
       </div>
 
+      <h2>Meus Decks</h2>
+      <label for="deckName">Nome do deck</label>
+      <input id="deckName" value="Meu primeiro deck" maxlength="70" placeholder="Ex.: Santos e virtudes">
+      <label for="deckCardName">Nome do card</label>
+      <input id="deckCardName" value="Card 001" maxlength="70" placeholder="Ex.: São Pio de Pietrelcina">
+      <button id="saveDeckCard" style="width:100%;margin-top:8px">Salvar card em Meus Decks</button>
+      <label for="deckSelect">Decks salvos neste navegador</label>
+      <select id="deckSelect"><option value="">Nenhum deck salvo</option></select>
+      <label for="deckCardSelect">Cards do deck</label>
+      <select id="deckCardSelect"><option value="">Selecione um deck primeiro</option></select>
+      <div class="actions">
+        <button id="loadDeckCard">Abrir para editar</button>
+        <button id="deleteDeckCard">Excluir card</button>
+        <button id="exportDeckPng" style="grid-column:1 / -1">Exportar deck em PNG (ZIP)</button>
+      </div>
+      <p class="hint">Os decks ficam armazenados localmente neste navegador. O ZIP exportado contém uma pasta por deck e um PNG por card.</p>
+    </section>
+
+    <section class="panel panel-bottom">
       <h2>Arranjos e impressão</h2>
       <label for="layoutName">Nome do arranjo</label>
       <input id="layoutName" value="Arranjo padrão">
@@ -476,25 +589,7 @@
         e depois importe-o no outro dispositivo. Para imprimir, escolha A4,
         escala de 100% e desative “ajustar à página”.
       </p>
-    </section>
-
-    <section class="preview-area">
-      <div class="preview-title">Pré-visualização — clique numa caixa para selecioná-la</div>
-      <div class="stage">
-        <div class="card" id="card">
-          <div class="art-window">
-            <img id="art" alt="Ilustração da carta">
-          </div>
-          <div class="txt number" id="vNumber" data-field="number">007<span class="handle"></span></div>
-          <div class="txt kind" id="vKind" data-field="kind">HABILIDADE<span class="handle"></span></div>
-          <div class="txt title" id="vTitle" data-field="title">Missa conventual<span class="handle"></span></div>
-          <div class="txt description" id="vDescription" data-field="description">Reconhece a participação atenta e respeitosa na celebração da Santa Missa.<span class="handle"></span></div>
-          <div class="txt date" id="vDate" data-field="date">Recebida: 16/10/2026<span class="handle"></span></div>
-          <div class="txt child" id="vChild" data-field="child">Nome da criança<span class="handle"></span></div>
-          <img id="frame" class="frame" alt="Moldura decorativa">
-        </div>
-      </div>
-
+      <h2>Ajustes da caixa selecionada</h2>
       <div class="selection-tools">
         <strong id="selectedLabel">Nenhuma caixa selecionada</strong>
         <div class="pair">
@@ -518,14 +613,6 @@
             <label for="fontSize">Fonte (% da largura)</label>
             <input id="fontSize" type="number" min="0.8" max="12" step="0.1" disabled>
           </div>
-          <div>
-            <label for="align">Alinhamento</label>
-            <select id="align" disabled>
-              <option value="left">Esquerda</option>
-              <option value="center">Centro</option>
-              <option value="right">Direita</option>
-            </select>
-          </div>
         </div>
 
         <div class="actions">
@@ -537,7 +624,6 @@
           As medidas são percentuais da carta, para manter as proporções ao mudar seu tamanho.
         </p>
       </div>
-
       <p class="editor-help">
         Dica: selecione a caixa de texto; arraste-a para mover. Arraste o
         quadrado azul no canto inferior direito para redimensionar. A moldura
@@ -556,6 +642,7 @@
       const frame = $('frame');
       const art = $('art');
       const artBg = $('artBg');
+      const autoArtBg = $('autoArtBg');
 
       let selected = null;
       let drag = null;
@@ -588,7 +675,94 @@
         document.documentElement.style.setProperty('--art-bg', artBg.value);
       }
 
+      // Estima uma cor a partir da moldura junto às bordas internas da janela.
+      // A imagem é desenhada num canvas separado; imagens externas sem CORS
+      // são ignoradas com segurança, mantendo o seletor manual disponível.
+      function detectArtBg(src) {
+        if (!autoArtBg.checked || !src) return;
+
+        const image = new Image();
+        if (!src.startsWith('data:') && !src.startsWith('blob:')) {
+          image.crossOrigin = 'anonymous';
+        }
+
+        image.onload = () => {
+          if (!autoArtBg.checked) return;
+
+          try {
+            const width = 500;
+            const height = 700;
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(image, 0, 0, width, height);
+
+            // A janela ocupa aproximadamente x=10–90% e y=9–68% da carta.
+            // Amostramos faixas estreitas imediatamente do lado de fora dessas bordas.
+            const bands = [
+              [0.085, 0.09, 0.83, 0.012],  // acima
+              [0.085, 0.668, 0.83, 0.012], // abaixo
+              [0.085, 0.10, 0.012, 0.56], // esquerda
+              [0.893, 0.10, 0.012, 0.56]  // direita
+            ];
+            const samples = [];
+
+            for (const [rx, ry, rw, rh] of bands) {
+              const x0 = Math.max(0, Math.floor(rx * width));
+              const y0 = Math.max(0, Math.floor(ry * height));
+              const w = Math.max(1, Math.floor(rw * width));
+              const h = Math.max(1, Math.floor(rh * height));
+              const pixels = ctx.getImageData(x0, y0, w, h).data;
+
+              for (let i = 0; i < pixels.length; i += 4) {
+                // Ignora transparência e pixels quase transparentes.
+                if (pixels[i + 3] < 180) continue;
+                samples.push([pixels[i], pixels[i + 1], pixels[i + 2]]);
+              }
+            }
+
+            if (!samples.length) {
+              $('status').textContent =
+                'Não foi possível estimar a cor automaticamente; escolha uma cor manual.';
+              return;
+            }
+
+            // Mediana por canal: reduz a influência de brilhos e detalhes isolados.
+            const median = values => {
+              values.sort((a, b) => a - b);
+              const mid = Math.floor(values.length / 2);
+              return values.length % 2 ? values[mid] :
+                Math.round((values[mid - 1] + values[mid]) / 2);
+            };
+            const rgb = [0, 1, 2].map(channel =>
+              median(samples.map(pixel => pixel[channel]))
+            );
+            const hex = '#' + rgb.map(value =>
+              value.toString(16).padStart(2, '0')
+            ).join('');
+
+            artBg.value = hex;
+            applyArtBg();
+            $('status').textContent =
+              'Cor de preenchimento estimada automaticamente: ' + hex.toUpperCase();
+          } catch (error) {
+            $('status').textContent =
+              'A imagem central não permitiu leitura automática da cor. Você pode defini-la manualmente.';
+          }
+        };
+
+        image.onerror = () => {
+          $('status').textContent =
+            'Não foi possível analisar a imagem central para estimar a cor; o ajuste manual continua disponível.';
+        };
+        image.src = src;
+      }
+
       artBg.addEventListener('input', applyArtBg);
+      autoArtBg.addEventListener('change', () => {
+        if (autoArtBg.checked && art.getAttribute('src')) detectArtBg(art.src);
+      });
       applyArtBg();
 
       function syncText() {
@@ -607,6 +781,7 @@
           el.appendChild(handle);
         }
         syncSize();
+        document.querySelectorAll('.txt').forEach(fitFontToBox);
       }
 
       function syncSize() {
@@ -626,20 +801,79 @@
           y: num(s.top) / card.clientHeight * 100,
           w: el.offsetWidth / card.clientWidth * 100,
           h: el.offsetHeight / card.clientHeight * 100,
-          font: num(s.fontSize) / card.clientWidth * 100,
-          align: s.textAlign
+          font: parseFloat(el.dataset.maxFont) || num(s.fontSize) / card.clientWidth * 100,
+          align: 'center' 
         };
       }
 
-      function applyGeom(el, g) {
+      function applyGeom(el, g, preserveMaxFont = false) {
         el.style.left = g.x + '%';
         el.style.top = g.y + '%';
         el.style.width = g.w + '%';
         el.style.height = g.h + '%';
         el.style.right = 'auto';
         el.style.bottom = 'auto';
-        el.style.fontSize = g.font + 'cqw';
-        el.style.textAlign = g.align || 'center';
+        if (!preserveMaxFont || !el.dataset.maxFont) {
+          el.dataset.maxFont = String(g.font || 2.5);
+        }
+        el.style.fontSize = el.dataset.maxFont + 'cqw';
+        el.style.textAlign = 'center';
+        fitFontToBox(el);
+      }
+
+      // Ajusta somente o tamanho da fonte, nunca a proporção das letras.
+      // O valor salvo em data-max-font é o teto configurável pelo usuário.
+      function fitFontToBox(el) {
+        if (!el || !card.clientWidth) return;
+        const maxCqw = parseFloat(el.dataset.maxFont) || 2.5;
+        const maxPx = Math.max(1, maxCqw / 100 * card.clientWidth);
+        const rect = el.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+
+        const probe = el.cloneNode(true);
+        probe.classList.remove('selected');
+        probe.querySelectorAll('.handle').forEach(node => node.remove());
+        probe.style.position = 'fixed';
+        probe.style.left = '-10000px';
+        probe.style.top = '0';
+        probe.style.width = rect.width + 'px';
+        probe.style.height = rect.height + 'px';
+        probe.style.minWidth = '0';
+        probe.style.minHeight = '0';
+        probe.style.maxWidth = 'none';
+        probe.style.maxHeight = 'none';
+        probe.style.overflow = 'hidden';
+        probe.style.display = 'grid';
+        probe.style.placeItems = 'center';
+        probe.style.boxSizing = 'border-box';
+        probe.style.border = '0';
+        probe.style.margin = '0';
+        probe.style.textAlign = 'center';
+        probe.style.whiteSpace = 'pre-wrap';
+        probe.style.overflowWrap = 'anywhere';
+        probe.style.wordBreak = 'normal';
+        probe.style.lineHeight = getComputedStyle(el).lineHeight;
+        document.body.appendChild(probe);
+
+        let low = 1;
+        let high = maxPx;
+        let best = 1;
+        for (let i = 0; i < 14; i++) {
+          const mid = (low + high) / 2;
+          probe.style.fontSize = mid + 'px';
+          if (probe.scrollHeight <= probe.clientHeight + 1 &&
+              probe.scrollWidth <= probe.clientWidth + 1) {
+            best = mid;
+            low = mid;
+          } else {
+            high = mid;
+          }
+        }
+        probe.remove();
+        el.style.fontSize = (best / card.clientWidth * 100) + 'cqw';
+        el.style.display = 'grid';
+        el.style.placeItems = 'center';
+        el.style.textAlign = 'center';
       }
 
       function choose(el) {
@@ -652,7 +886,7 @@
           ? 'Caixa selecionada: ' + labelNames[selected.id]
           : 'Nenhuma caixa selecionada';
 
-        ['posX', 'posY', 'boxW', 'boxH', 'fontSize', 'align']
+        ['posX', 'posY', 'boxW', 'boxH', 'fontSize']
           .forEach(id => $(id).disabled = !on);
 
         if (on) {
@@ -662,7 +896,6 @@
           $('boxW').value = g.w.toFixed(1);
           $('boxH').value = g.h.toFixed(1);
           $('fontSize').value = g.font.toFixed(2);
-          $('align').value = g.align;
         }
       }
 
@@ -675,7 +908,7 @@
         g.w = clamp(+$('boxW').value, 2, 100 - g.x);
         g.h = clamp(+$('boxH').value, 1, 100 - g.y);
         g.font = clamp(+$('fontSize').value, 0.8, 12);
-        g.align = $('align').value;
+        g.align = 'center';
 
         applyGeom(selected, g);
         choose(selected);
@@ -719,13 +952,13 @@
           g.y = clamp(g.y + dy, 0, 100 - g.h);
         }
 
-        applyGeom(drag.el, g);
+        applyGeom(drag.el, g, true);
         choose(drag.el);
       });
 
       window.addEventListener('pointerup', () => drag = null);
 
-      ['posX', 'posY', 'boxW', 'boxH', 'fontSize', 'align']
+      ['posX', 'posY', 'boxW', 'boxH', 'fontSize']
         .forEach(id => $(id).addEventListener('input', updateSelected));
 
       $('deselect').onclick = () => choose(null);
@@ -752,6 +985,7 @@
               frameData = reader.result;
             } else {
               artData = reader.result;
+              detectArtBg(artData);
             }
             $('status').textContent = 'Imagem carregada: ' + file.name;
           };
@@ -770,7 +1004,6 @@
         }
 
         frameData = '';
-        frame.src = $('frameChoice').value;
         frame.onerror = () => {
           $('status').textContent =
             'Não foi possível carregar ' + $('frameChoice').value +
@@ -780,6 +1013,7 @@
           $('status').textContent =
             'Moldura carregada: ' + $('frameChoice').selectedOptions[0].text;
         };
+        frame.src = $('frameChoice').value;
       });
 
       function getLayout() {
@@ -794,6 +1028,7 @@
           name: val('layoutName'),
           cardSize: val('cardSize'),
           artBg: val('artBg'),
+          autoArtBg: autoArtBg.checked,
           fields: Object.fromEntries(fields.map(id => [id, val(id)])),
           boxes,
           framePath: val('frameChoice') || '',
@@ -808,6 +1043,7 @@
           throw Error('Este não parece ser um arquivo de arranjo BMM válido.');
         }
 
+        if (data.autoArtBg !== undefined) autoArtBg.checked = data.autoArtBg;
         if (data.artBg !== undefined) {
           artBg.value = data.artBg;
           applyArtBg();
@@ -846,6 +1082,7 @@
 
         if (data.artData) {
           artData = data.artData;
+          art.onload = () => detectArtBg(artData);
           art.src = artData;
         } else {
           art.removeAttribute('src');
@@ -956,6 +1193,250 @@
         e.target.value = '';
       });
 
+      // Meus Decks: IndexedDB armazena imagens e cards localmente, sem o limite
+      // baixo de tamanho do localStorage.
+      const deckDbName = 'bmm-meus-decks-db';
+      const deckStoreName = 'decks';
+      function openDeckDb() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(deckDbName, 1);
+          request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains(deckStoreName)) {
+              db.createObjectStore(deckStoreName, { keyPath: 'name' });
+            }
+          };
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error || new Error('Falha ao abrir o armazenamento local.'));
+        });
+      }
+      async function deckTransaction(mode, callback) {
+        const db = await openDeckDb();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(deckStoreName, mode);
+          const store = tx.objectStore(deckStoreName);
+          let result;
+          try { result = callback(store); } catch (error) { reject(error); db.close(); return; }
+          tx.oncomplete = () => { db.close(); resolve(result && result.result !== undefined ? result.result : result); };
+          tx.onerror = () => { db.close(); reject(tx.error || new Error('Falha no armazenamento local.')); };
+          tx.onabort = () => { db.close(); reject(tx.error || new Error('Operação cancelada.')); };
+        });
+      }
+      async function getAllDecks() {
+        const db = await openDeckDb();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(deckStoreName, 'readonly');
+          const request = tx.objectStore(deckStoreName).getAll();
+          request.onsuccess = () => resolve(request.result || []);
+          request.onerror = () => reject(request.error);
+          tx.oncomplete = () => db.close();
+          tx.onerror = () => { db.close(); reject(tx.error); };
+        });
+      }
+      async function getDeck(name) {
+        const db = await openDeckDb();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(deckStoreName, 'readonly');
+          const request = tx.objectStore(deckStoreName).get(name);
+          request.onsuccess = () => resolve(request.result || null);
+          request.onerror = () => reject(request.error);
+          tx.oncomplete = () => db.close();
+          tx.onerror = () => { db.close(); reject(tx.error); };
+        });
+      }
+      function safeName(value) {
+        return String(value || 'sem-nome').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 70) || 'sem-nome';
+      }
+      async function refreshDeckLists(keepDeck = '', keepCard = '') {
+        const decks = await getAllDecks();
+        const deckSelect = $('deckSelect');
+        deckSelect.innerHTML = '';
+        if (!decks.length) {
+          deckSelect.add(new Option('Nenhum deck salvo', ''));
+          $('deckCardSelect').innerHTML = '<option value="">Nenhum card salvo</option>';
+          return;
+        }
+        decks.sort((a,b) => a.name.localeCompare(b.name, 'pt-BR'));
+        decks.forEach(deck => deckSelect.add(new Option(deck.name, deck.name)));
+        deckSelect.value = decks.some(d => d.name === keepDeck) ? keepDeck : decks[0].name;
+        await refreshDeckCards(keepCard);
+      }
+      async function refreshDeckCards(keepCard = '') {
+        const name = $('deckSelect').value;
+        const select = $('deckCardSelect');
+        select.innerHTML = '';
+        if (!name) { select.add(new Option('Selecione um deck primeiro', '')); return; }
+        const deck = await getDeck(name);
+        const cards = Object.keys(deck?.cards || {}).sort((a,b) => a.localeCompare(b, 'pt-BR'));
+        if (!cards.length) { select.add(new Option('Este deck está vazio', '')); return; }
+        cards.forEach(cardName => select.add(new Option(cardName, cardName)));
+        select.value = cards.includes(keepCard) ? keepCard : cards[0];
+      }
+      $('deckSelect').addEventListener('change', () => refreshDeckCards().catch(showDeckError));
+      function showDeckError(error) {
+        $('status').textContent = 'Meus Decks: ' + (error?.message || 'ocorreu um erro.');
+      }
+      $('saveDeckCard').onclick = async () => {
+        try {
+          const deckName = $('deckName').value.trim();
+          const cardName = $('deckCardName').value.trim();
+          if (!deckName || !cardName) { $('status').textContent = 'Informe o nome do deck e do card.'; return; }
+          const existing = await getDeck(deckName) || { name: deckName, cards: {} };
+          existing.cards[cardName] = getLayout();
+          existing.cards[cardName].name = cardName;
+          existing.updatedAt = new Date().toISOString();
+          await deckTransaction('readwrite', store => store.put(existing));
+          await refreshDeckLists(deckName, cardName);
+          $('status').textContent = 'Card “' + cardName + '” salvo no deck “' + deckName + '” neste navegador.';
+        } catch (error) { showDeckError(error); }
+      };
+      $('loadDeckCard').onclick = async () => {
+        try {
+          const deckName = $('deckSelect').value;
+          const cardName = $('deckCardSelect').value;
+          if (!deckName || !cardName) { $('status').textContent = 'Selecione um deck e um card.'; return; }
+          const deck = await getDeck(deckName);
+          if (!deck?.cards?.[cardName]) { $('status').textContent = 'O card selecionado não foi encontrado.'; return; }
+          applyLayout(deck.cards[cardName]);
+          $('layoutName').value = cardName;
+          $('deckName').value = deckName;
+          $('deckCardName').value = cardName;
+          $('status').textContent = 'Card “' + cardName + '” aberto para edição.';
+        } catch (error) { showDeckError(error); }
+      };
+      $('deleteDeckCard').onclick = async () => {
+        try {
+          const deckName = $('deckSelect').value;
+          const cardName = $('deckCardSelect').value;
+          if (!deckName || !cardName) { $('status').textContent = 'Selecione um deck e um card para excluir.'; return; }
+          if (!confirm('Excluir o card “' + cardName + '” do deck “' + deckName + '”?')) return;
+          const deck = await getDeck(deckName);
+          if (!deck) return;
+          delete deck.cards[cardName];
+          if (!Object.keys(deck.cards).length) {
+            await deckTransaction('readwrite', store => store.delete(deckName));
+            await refreshDeckLists();
+          } else {
+            await deckTransaction('readwrite', store => store.put(deck));
+            await refreshDeckLists(deckName);
+          }
+          $('status').textContent = 'Card excluído de Meus Decks.';
+        } catch (error) { showDeckError(error); }
+      };
+
+      function waitForImage(img) {
+        if (!img || !img.getAttribute('src') || img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          const done = () => resolve();
+          img.addEventListener('load', done, { once: true });
+          img.addEventListener('error', done, { once: true });
+          setTimeout(done, 7000);
+        });
+      }
+      async function captureCardPng() {
+        await Promise.all([...card.querySelectorAll('img')].map(waitForImage));
+        const clone = card.cloneNode(true);
+        clone.removeAttribute('id');
+        // Torna absolutos os caminhos das imagens, pois o PNG será renderizado
+        // a partir de um SVG temporário e não da URL original da página.
+        const sourceImages = [...card.querySelectorAll('img')];
+        const cloneImages = [...clone.querySelectorAll('img')];
+        cloneImages.forEach((img, index) => {
+          const source = sourceImages[index];
+          if (source && (source.currentSrc || source.src)) img.setAttribute('src', source.currentSrc || source.src);
+        });
+        clone.querySelectorAll('.txt').forEach(el => {
+          el.classList.remove('selected');
+          el.querySelectorAll('.handle').forEach(handle => handle.remove());
+          el.style.border = '0';
+        });
+        const css = document.querySelector('style').textContent +
+          '\n.card{width:750px!important;height:1050px!important;box-shadow:none!important;}' +
+          '\n.card .txt{border:0!important;}';
+        const cloneMarkup = new XMLSerializer().serializeToString(clone);
+        const html = '<div xmlns="http://www.w3.org/1999/xhtml" style="width:750px;height:1050px;overflow:hidden;">' +
+          '<style>' + css + '</style>' + cloneMarkup + '</div>';
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="750" height="1050" viewBox="0 0 750 1050"><foreignObject width="750" height="1050">' + html + '</foreignObject></svg>';
+        const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        try {
+          const image = new Image();
+          image.src = url;
+          await new Promise((resolve, reject) => {
+            image.onload = resolve;
+            image.onerror = () => reject(new Error('O navegador não conseguiu converter um card em PNG.'));
+          });
+          const canvas = document.createElement('canvas');
+          canvas.width = 1500; canvas.height = 2100;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          const pngBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+          if (!pngBlob) throw new Error('Não foi possível gerar o PNG.');
+          return new Uint8Array(await pngBlob.arrayBuffer());
+        } finally { URL.revokeObjectURL(url); }
+      }
+      function crc32(bytes) {
+        let crc = -1;
+        for (const byte of bytes) {
+          crc ^= byte;
+          for (let k = 0; k < 8; k++) crc = (crc >>> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
+        }
+        return (crc ^ -1) >>> 0;
+      }
+      function makeZip(files) {
+        const encoder = new TextEncoder();
+        const localParts = [], centralParts = [];
+        let offset = 0;
+        const u16 = n => [n & 255, (n >>> 8) & 255];
+        const u32 = n => [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255];
+        for (const file of files) {
+          const name = encoder.encode(file.name);
+          const data = file.data || new Uint8Array(0);
+          const crc = crc32(data);
+          const local = new Uint8Array([...u32(0x04034b50), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(name.length), ...u16(0), ...name, ...data]);
+          localParts.push(local);
+          const central = new Uint8Array([...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(name.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(offset), ...name]);
+          centralParts.push(central);
+          offset += local.length;
+        }
+        const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+        const end = new Uint8Array([...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(files.length), ...u16(files.length), ...u32(centralSize), ...u32(offset), ...u16(0)]);
+        return new Blob([...localParts, ...centralParts, end], { type: 'application/zip' });
+      }
+      $('exportDeckPng').onclick = async () => {
+        const deckName = $('deckSelect').value;
+        if (!deckName) { $('status').textContent = 'Salve ou selecione um deck antes de exportar.'; return; }
+        let original;
+        try {
+          const deck = await getDeck(deckName);
+          const names = Object.keys(deck?.cards || {}).sort((a,b) => a.localeCompare(b, 'pt-BR'));
+          if (!names.length) { $('status').textContent = 'Este deck não contém cards.'; return; }
+          original = getLayout();
+          const files = [{ name: safeName(deckName) + '/', data: new Uint8Array(0) }];
+          for (let i = 0; i < names.length; i++) {
+            $('status').textContent = 'Exportando PNG ' + (i + 1) + ' de ' + names.length + '…';
+            applyLayout(deck.cards[names[i]]);
+            await new Promise(resolve => setTimeout(resolve, 100));
+            const png = await captureCardPng();
+            files.push({ name: safeName(deckName) + '/' + safeName(names[i]) + '.png', data: png });
+          }
+          const zip = makeZip(files);
+          const url = URL.createObjectURL(zip);
+          const a = document.createElement('a');
+          a.href = url; a.download = safeName(deckName) + '_PNGs.zip'; a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+          $('status').textContent = 'Exportação concluída: ' + names.length + ' PNG(s) no ZIP.';
+        } catch (error) {
+          showDeckError(error);
+        } finally {
+          if (original) {
+            try { applyLayout(original); } catch (_) {}
+          }
+        }
+      };
+      refreshDeckLists().catch(() => {});
+
       $('reset').onclick = () => {
         const defaultsText = {
           number: '007',
@@ -980,6 +1461,7 @@
         artData = '';
 
         artBg.value = '#30213f';
+        autoArtBg.checked = true;
         applyArtBg();
 
         syncText();
