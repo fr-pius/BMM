@@ -561,6 +561,7 @@
       <div class="actions">
         <button id="loadDeckCard">Abrir para editar</button>
         <button id="deleteDeckCard">Excluir card</button>
+        <button id="exportCardPng" style="grid-column:1 / -1">Exportar card selecionado em PNG</button>
         <button id="exportDeckPng" style="grid-column:1 / -1">Exportar deck em PNG (ZIP)</button>
       </div>
       <p class="hint">Os decks ficam armazenados localmente neste navegador. O ZIP exportado contém uma pasta por deck e um PNG por card.</p>
@@ -1420,32 +1421,51 @@
           setTimeout(done, 7000);
         });
       }
+      // Exporta no tamanho escolhido no gerador. A imagem é renderizada a
+      // 300 dpi e recebe o bloco pHYs do PNG para informar ao Word e a outros
+      // editores a dimensão física correspondente em centímetros.
       async function captureCardPng() {
         await Promise.all([...card.querySelectorAll('img')].map(waitForImage));
+
+        const widthCm = Number(val('cardSize'));
+        const heightCm = widthCm * 1.4;
+        const dpi = 300;
+        const pixelWidth = Math.round(widthCm / 2.54 * dpi);
+        const pixelHeight = Math.round(heightCm / 2.54 * dpi);
+
         const clone = card.cloneNode(true);
         clone.removeAttribute('id');
-        // Torna absolutos os caminhos das imagens, pois o PNG será renderizado
-        // a partir de um SVG temporário e não da URL original da página.
+
         const sourceImages = [...card.querySelectorAll('img')];
         const cloneImages = [...clone.querySelectorAll('img')];
         cloneImages.forEach((img, index) => {
           const source = sourceImages[index];
-          if (source && (source.currentSrc || source.src)) img.setAttribute('src', source.currentSrc || source.src);
+          if (source && (source.currentSrc || source.src)) {
+            img.setAttribute('src', source.currentSrc || source.src);
+          }
         });
+
         clone.querySelectorAll('.txt').forEach(el => {
           el.classList.remove('selected');
           el.querySelectorAll('.handle').forEach(handle => handle.remove());
           el.style.border = '0';
         });
+
         const css = document.querySelector('style').textContent +
-          '\n.card{width:750px!important;height:1050px!important;box-shadow:none!important;}' +
-          '\n.card .txt{border:0!important;}';
+          '\\n.card{width:' + pixelWidth + 'px!important;height:' + pixelHeight + 'px!important;box-shadow:none!important;}' +
+          '\\n.card .txt{border:0!important;}';
         const cloneMarkup = new XMLSerializer().serializeToString(clone);
-        const html = '<div xmlns="http://www.w3.org/1999/xhtml" style="width:750px;height:1050px;overflow:hidden;">' +
+        const html = '<div xmlns="http://www.w3.org/1999/xhtml" style="width:' +
+          pixelWidth + 'px;height:' + pixelHeight + 'px;overflow:hidden;">' +
           '<style>' + css + '</style>' + cloneMarkup + '</div>';
-        const svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="750" height="1050" viewBox="0 0 750 1050"><foreignObject width="750" height="1050">' + html + '</foreignObject></svg>';
-        const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="' +
+          pixelWidth + '" height="' + pixelHeight + '" viewBox="0 0 ' +
+          pixelWidth + ' ' + pixelHeight + '"><foreignObject width="' +
+          pixelWidth + '" height="' + pixelHeight + '">' + html +
+          '</foreignObject></svg>';
+
+        const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
         try {
           const image = new Image();
           image.src = url;
@@ -1453,15 +1473,60 @@
             image.onload = resolve;
             image.onerror = () => reject(new Error('O navegador não conseguiu converter um card em PNG.'));
           });
+
           const canvas = document.createElement('canvas');
-          canvas.width = 1500; canvas.height = 2100;
+          canvas.width = pixelWidth;
+          canvas.height = pixelHeight;
           const ctx = canvas.getContext('2d');
-          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          if (!ctx) throw new Error('Não foi possível preparar a imagem para exportação.');
+          ctx.drawImage(image, 0, 0, pixelWidth, pixelHeight);
+
           const pngBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
           if (!pngBlob) throw new Error('Não foi possível gerar o PNG.');
-          return new Uint8Array(await pngBlob.arrayBuffer());
-        } finally { URL.revokeObjectURL(url); }
+
+          // O pHYs registra a resolução em pixels por metro. Calculá-la a
+          // partir dos pixels e dos centímetros escolhidos preserva a medida
+          // física do cartão ao inseri-lo em um editor de texto.
+          const png = new Uint8Array(await pngBlob.arrayBuffer());
+          const type = new TextEncoder().encode('pHYs');
+          const data = new Uint8Array(9);
+          const view = new DataView(data.buffer);
+          view.setUint32(0, Math.round(pixelWidth / (widthCm / 100)));
+          view.setUint32(4, Math.round(pixelHeight / (heightCm / 100)));
+          data[8] = 1;
+
+          const crcInput = new Uint8Array(type.length + data.length);
+          crcInput.set(type, 0);
+          crcInput.set(data, type.length);
+          const crc = crc32(crcInput);
+
+          const chunk = new Uint8Array(4 + crcInput.length + 4);
+          const chunkView = new DataView(chunk.buffer);
+          chunkView.setUint32(0, data.length);
+          chunk.set(crcInput, 4);
+          chunkView.setUint32(4 + crcInput.length, crc);
+
+          // Insere pHYs imediatamente depois do IHDR (offset PNG = 33).
+          const result = new Uint8Array(png.length + chunk.length);
+          result.set(png.subarray(0, 33), 0);
+          result.set(chunk, 33);
+          result.set(png.subarray(33), 33 + chunk.length);
+          return result;
+        } finally {
+          URL.revokeObjectURL(url);
+        }
       }
+
+      function downloadPng(bytes, filename) {
+        const blob = new Blob([bytes], { type: 'image/png' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      }
+
       function crc32(bytes) {
         let crc = -1;
         for (const byte of bytes) {
@@ -1490,6 +1555,40 @@
         const end = new Uint8Array([...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(files.length), ...u16(files.length), ...u32(centralSize), ...u32(offset), ...u16(0)]);
         return new Blob([...localParts, ...centralParts, end], { type: 'application/zip' });
       }
+      $('exportCardPng').onclick = async () => {
+        const deckName = $('deckSelect').value;
+        const cardName = $('deckCardSelect').value;
+        if (!deckName || !cardName) {
+          $('status').textContent = 'Selecione um deck e um card salvo para exportar.';
+          return;
+        }
+
+        let original;
+        try {
+          const deck = await getDeck(deckName);
+          const layout = deck?.cards?.[cardName];
+          if (!layout) {
+            $('status').textContent = 'O card selecionado não foi encontrado.';
+            return;
+          }
+
+          original = getLayout();
+          $('status').textContent = 'Preparando PNG de “' + cardName + '”…';
+          applyLayout(layout);
+          await new Promise(resolve => setTimeout(resolve, 120));
+          const png = await captureCardPng();
+          downloadPng(png, safeName(cardName) + '.png');
+          $('status').textContent = 'PNG exportado: ' + cardName +
+            ' (' + val('cardSize') + ' × ' + (Number(val('cardSize')) * 1.4).toFixed(2) + ' cm, 300 dpi).';
+        } catch (error) {
+          showDeckError(error);
+        } finally {
+          if (original) {
+            try { applyLayout(original); } catch (_) {}
+          }
+        }
+      };
+
       $('exportDeckPng').onclick = async () => {
         const deckName = $('deckSelect').value;
         if (!deckName) { $('status').textContent = 'Salve ou selecione um deck antes de exportar.'; return; }
@@ -1512,7 +1611,8 @@
           const a = document.createElement('a');
           a.href = url; a.download = safeName(deckName) + '_PNGs.zip'; a.click();
           setTimeout(() => URL.revokeObjectURL(url), 2000);
-          $('status').textContent = 'Exportação concluída: ' + names.length + ' PNG(s) no ZIP.';
+          $('status').textContent = 'Exportação concluída: ' + names.length +
+            ' PNG(s) no ZIP. Cada arquivo conserva a dimensão física escolhida no gerador.';
         } catch (error) {
           showDeckError(error);
         } finally {
