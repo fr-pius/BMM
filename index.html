@@ -1,140 +1,302 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#244b38">
     <title>Biblioteca de Modelos do Mosteiro</title>
-
     <style>
+        :root {
+            color-scheme: light;
+            --verde: #244b38;
+            --verde-claro: #edf3ef;
+            --texto: #243129;
+            --suave: #647168;
+            --borda: #dce4de;
+            --fundo: #f5f7f5;
+        }
+
+        * { box-sizing: border-box; }
 
         body {
+            margin: 0;
+            padding: 32px 24px 48px;
+            background: var(--fundo);
+            color: var(--texto);
             font-family: Arial, sans-serif;
-            max-width: 700px;
-            margin: 60px auto;
-            padding: 20px;
-            line-height: 1.6;
+            line-height: 1.5;
+        }
+
+        .pagina {
+            width: min(100%, 1120px);
+            margin: 0 auto;
+        }
+
+        .cabecalho {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            margin-bottom: 24px;
+        }
+
+        .logo {
+            width: 88px;
+            height: auto;
+            flex: 0 0 auto;
         }
 
         h1 {
-            margin-bottom: 10px;
+            margin: 0 0 5px;
+            color: var(--verde);
+            font-size: clamp(1.55rem, 3vw, 2.15rem);
+            line-height: 1.2;
         }
 
-        p {
-            margin-bottom: 30px;
-        }
-
-        .modelos {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .modelo {
-            display: block;
-            padding: 12px 16px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            text-decoration: none;
-            color: #222;
-            background: #f7f7f7;
-        }
-
-        .modelo:hover {
-            background: #eaeaea;
+        .subtitulo {
+            margin: 0;
+            color: var(--suave);
         }
 
         .aviso {
-    border: 1px solid #ccc;
-    background: #fffbe6;
-    padding: 12px 16px;
-    margin-bottom: 30px;
-    border-radius: 6px;
-}
+            margin: 0 0 22px;
+            padding: 12px 16px;
+            border: 1px solid #e7dcae;
+            border-left: 4px solid #b99b3c;
+            border-radius: 8px;
+            background: #fffdf3;
+        }
 
-.aviso strong {
-    display: block;
-    margin-bottom: 5px;
-}
+        .aviso strong { display: block; margin-bottom: 2px; }
+        .aviso p { margin: 0; }
 
-img {
-    width: 120px;
-    height: auto;
-    display: block;
-    margin: 0 auto 20px auto;
-}        
+        .busca {
+            margin-bottom: 22px;
+            padding: 18px;
+            border: 1px solid var(--borda);
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .busca label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .campo-busca {
+            display: flex;
+            gap: 8px;
+        }
+
+        .campo-busca input {
+            min-width: 0;
+            flex: 1;
+            padding: 12px 14px;
+            border: 1px solid #bfcac2;
+            border-radius: 7px;
+            color: var(--texto);
+            background: #fff;
+            font: inherit;
+        }
+
+        .campo-busca input:focus {
+            outline: 3px solid #c9ded0;
+            border-color: var(--verde);
+        }
+
+        .campo-busca button {
+            padding: 0 18px;
+            border: 0;
+            border-radius: 7px;
+            color: #fff;
+            background: var(--verde);
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .campo-busca button:hover { background: #193a2a; }
+
+        .orientacao {
+            margin: 8px 0 0;
+            color: var(--suave);
+            font-size: .9rem;
+        }
+
+        .barra-lista {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 0 0 12px;
+        }
+
+        .barra-lista h2 {
+            margin: 0;
+            color: var(--verde);
+            font-size: 1.15rem;
+        }
+
+        #contador {
+            color: var(--suave);
+            font-size: .9rem;
+        }
+
+        .modelos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+            gap: 12px;
+        }
+
+        .modelo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-height: 78px;
+            padding: 14px 16px;
+            border: 1px solid var(--borda);
+            border-radius: 9px;
+            color: var(--texto);
+            background: #fff;
+            text-decoration: none;
+            transition: border-color .15s ease, background .15s ease, transform .15s ease;
+        }
+
+        .modelo:hover {
+            border-color: #91aa99;
+            background: var(--verde-claro);
+            transform: translateY(-1px);
+        }
+
+        .numero {
+            display: grid;
+            place-items: center;
+            width: 48px;
+            height: 44px;
+            flex: 0 0 48px;
+            border-radius: 7px;
+            color: var(--verde);
+            background: var(--verde-claro);
+            font-weight: 700;
+        }
+
+        .nome-modelo { font-weight: 600; }
+
+        .vazio {
+            display: none;
+            padding: 24px;
+            border: 1px dashed #bfcac2;
+            border-radius: 9px;
+            color: var(--suave);
+            background: #fff;
+            text-align: center;
+        }
+
+        @media (max-width: 560px) {
+            body { padding: 22px 14px 36px; }
+            .cabecalho { align-items: flex-start; gap: 14px; }
+            .logo { width: 66px; }
+            .busca { padding: 14px; }
+            .campo-busca button { padding: 0 13px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                transition: none !important;
+            }
+        }
     </style>
-
 </head>
-
 <body>
+    <main class="pagina">
+        <header class="cabecalho">
+            <img class="logo" src="logo_alce.png" alt="Logo da BMM">
+            <div>
+                <h1>Biblioteca de Modelos do Mosteiro</h1>
+                <p class="subtitulo">Acesso aos modelos da BMM.</p>
+            </div>
+        </header>
 
-    <img src="logo_alce.png" alt="Logo da BMM">
-    
-    <h1>Biblioteca de Modelos do Mosteiro</h1>
+        <aside class="aviso" aria-label="Aviso sobre os modelos">
+            <strong>Aviso</strong>
+            <p>Modelos funcionando atualmente: M1, M6 e M8.</p>
+        </aside>
 
-    <p>
-        Acesso aos modelos da BMM.
-    </p>
+        <section class="busca" aria-label="Busca de modelos">
+            <label for="busca-modelo">Localizar um modelo pelo número</label>
+            <div class="campo-busca">
+                <input
+                    id="busca-modelo"
+                    type="search"
+                    inputmode="search"
+                    placeholder="Digite, por exemplo, 6 ou M6"
+                    autocomplete="off"
+                    aria-describedby="orientacao"
+                >
+                <button id="limpar-busca" type="button">Limpar</button>
+            </div>
+            <p class="orientacao" id="orientacao">Você também pode digitar apenas o número, sem a letra M.</p>
+        </section>
 
-    <div class="aviso">
+        <div class="barra-lista">
+            <h2>Modelos disponíveis</h2>
+            <span id="contador" aria-live="polite">10 modelos</span>
+        </div>
 
-    <strong>Aviso</strong>
+        <nav class="modelos" id="lista-modelos" aria-label="Lista de modelos">
+            <a class="modelo" href="M1.html" data-numero="1"><span class="numero">M1</span><span class="nome-modelo">Horários dos Hóspedes</span></a>
+            <a class="modelo" href="M2.html" data-numero="2"><span class="numero">M2</span><span class="nome-modelo">Escalas</span></a>
+            <a class="modelo" href="M3.html" data-numero="3"><span class="numero">M3</span><span class="nome-modelo">Horários Especiais</span></a>
+            <a class="modelo" href="M4.html" data-numero="4"><span class="numero">M4</span><span class="nome-modelo">Horários dos Monges</span></a>
+            <a class="modelo" href="M5.html" data-numero="5"><span class="numero">M5</span><span class="nome-modelo">Documentos Oficiais</span></a>
+            <a class="modelo" href="M6.html" data-numero="6"><span class="numero">M6</span><span class="nome-modelo">Placas</span></a>
+            <a class="modelo" href="M7.html" data-numero="7"><span class="numero">M7</span><span class="nome-modelo">Formulários e Fichas</span></a>
+            <a class="modelo" href="M8.html" data-numero="8"><span class="numero">M8</span><span class="nome-modelo">Plaquinhas da Sacristia</span></a>
+            <a class="modelo" href="M9.html" data-numero="9"><span class="numero">M9</span><span class="nome-modelo">Figurinhas <span style="font-weight:400;color:#647168">(incompleto: somente moldura lendária disponível)</span></span></a>
+            <a class="modelo" href="M10.html" data-numero="10"><span class="numero">M10</span><span class="nome-modelo">?</span></a>
+        </nav>
 
-    <p>
-        Modelos funcionando atualmente: M1, M6 e M8.
-    </p>
+        <p class="vazio" id="sem-resultados" role="status">Nenhum modelo encontrado com esse número. Verifique o número e tente novamente.</p>
+    </main>
 
-</div>
-    
-    <div class="modelos">
+    <script>
+        const campo = document.getElementById('busca-modelo');
+        const botaoLimpar = document.getElementById('limpar-busca');
+        const modelos = Array.from(document.querySelectorAll('.modelo'));
+        const contador = document.getElementById('contador');
+        const mensagemVazia = document.getElementById('sem-resultados');
 
-        <a class="modelo" href="M1.html">
-            M1 — Horários dos Hóspedes
-        </a>
+        function filtrarModelos() {
+            const termo = campo.value.trim().toUpperCase().replace(/^M/, '');
+            let visiveis = 0;
 
-        <a class="modelo" href="M2.html">
-            M2 — Escalas
-        </a>
+            modelos.forEach((modelo) => {
+                const numero = modelo.dataset.numero;
+                const corresponde = termo === '' || numero === termo;
+                modelo.hidden = !corresponde;
+                if (corresponde) visiveis++;
+            });
 
-        <a class="modelo" href="M3.html">
-            M3 — Horários Especiais
-        </a>
+            contador.textContent = visiveis === 1 ? '1 modelo' : visiveis + ' modelos';
+            mensagemVazia.style.display = visiveis === 0 ? 'block' : 'none';
+        }
 
-        <a class="modelo" href="M4.html">
-            M4 — Horários dos Monges
-        </a>
+        campo.addEventListener('input', filtrarModelos);
+        botaoLimpar.addEventListener('click', () => {
+            campo.value = '';
+            filtrarModelos();
+            campo.focus();
+        });
 
-        <a class="modelo" href="M5.html">
-            M5 — Documentos Oficiais
-        </a>
-
-        <a class="modelo" href="M6.html">
-            M6 — Placas
-        </a>
-
-        <a class="modelo" href="M7.html">
-            M7 — Formulários e Fichas
-        </a>
-
-        <a class="modelo" href="M8.html">
-            M8 — Plaquinhas da Sacristia
-        </a>
-
-        <a class="modelo" href="M9.html">
-            M9 — Figurinhas (Incompleto: somente moldura lendária disponível)
-        </a>
-
-        <a class="modelo" href="M10.html">
-            M10 — ?
-        </a>
-
-    </div>
-
+        campo.addEventListener('keydown', (evento) => {
+            if (evento.key === 'Enter') {
+                const encontrado = modelos.find((modelo) => !modelo.hidden);
+                if (encontrado && campo.value.trim() !== '') {
+                    window.location.href = encontrado.href;
+                }
+            }
+        });
+    </script>
 </body>
-
 </html>
