@@ -169,6 +169,13 @@
       text-align: center;
     }
 
+    .refresh-card {
+      width: min(100%, 240px);
+      background: #28513f;
+      border-color: #83b99a;
+      color: #f0fff5;
+    }
+
     .selection-tools {
       min-width: 0;
       padding: 12px;
@@ -502,6 +509,7 @@
 
     <section class="preview-area">
       <div class="preview-title">Pré-visualização — clique numa caixa para selecioná-la</div>
+      <button id="refreshCard" class="refresh-card" type="button">↻ Atualizar carta</button>
       <div class="stage">
         <div class="card" id="card">
           <div class="art-window">
@@ -877,6 +885,30 @@
         document.documentElement.style.setProperty('--print-w', w + 'cm');
         document.documentElement.style.setProperty('--print-h', h + 'cm');
       }
+
+      // Reaplica os valores atuais dos menus e campos à pré-visualização,
+      // sem restaurar padrões nem alterar os dados salvos nos decks.
+      function refreshCardView() {
+        syncText();
+        syncSize();
+        applyArtBg();
+
+        const frameSrc = frame.currentSrc || frame.src;
+        if (frameSrc && frame.complete && frame.naturalWidth) {
+          detectFrameBg(frameSrc);
+        }
+
+        const artSrc = art.currentSrc || art.src;
+        if (autoArtBg.checked && artSrc && art.complete && art.naturalWidth) {
+          detectArtBg(artSrc);
+        }
+
+        document.querySelectorAll('.txt').forEach(fitFontToBox);
+        choose(selected);
+        $('status').textContent = 'Carta atualizada com as configurações atuais dos menus e campos.';
+      }
+
+      $('refreshCard').addEventListener('click', refreshCardView);
 
       function geometry(el) {
         const s = getComputedStyle(el);
