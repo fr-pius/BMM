@@ -1494,11 +1494,23 @@
         ctx.fillRect(ax, ay, aw, ah);
 
         const art = $('art');
-        if (art.getAttribute('src') && art.complete && art.naturalWidth) {
+        if (art.getAttribute('src')) {
+          if (!art.complete || !art.naturalWidth) {
+            throw new Error('A ilustração não foi carregada. Confira a imagem e tente exportar novamente.');
+          }
           const ratio = Math.min(aw / art.naturalWidth, ah / art.naturalHeight);
           const dw = art.naturalWidth * ratio;
           const dh = art.naturalHeight * ratio;
           ctx.drawImage(art, ax + (aw - dw) / 2, ay + (ah - dh) / 2, dw, dh);
+        }
+
+        // A moldura tem z-index 5; os textos têm z-index 8 e ficam acima dela.
+        const frame = $('frame');
+        if (frame.getAttribute('src')) {
+          if (!frame.complete || !frame.naturalWidth) {
+            throw new Error('A moldura não foi carregada. Confira a imagem e tente exportar novamente.');
+          }
+          ctx.drawImage(frame, 0, 0, pixelWidth, pixelHeight);
         }
 
         for (const el of card.querySelectorAll('.txt')) {
@@ -1566,11 +1578,6 @@
           const centerX = x + padL + maxWidth / 2;
           shown.forEach((line, index) => ctx.fillText(line, centerX, startY + index * lineHeight, maxWidth));
           ctx.restore();
-        }
-
-        const frame = $('frame');
-        if (frame.getAttribute('src') && frame.complete && frame.naturalWidth) {
-          ctx.drawImage(frame, 0, 0, pixelWidth, pixelHeight);
         }
 
         const pngBlob = await new Promise((resolve, reject) => {
