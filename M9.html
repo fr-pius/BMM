@@ -1546,158 +1546,131 @@
           setTimeout(done, 7000);
         });
       }
-      // Exporta no tamanho escolhido no gerador. A imagem é renderizada a
-      // 300 dpi e recebe o bloco pHYs do PNG para informar ao Word e a outros
-      // editores a dimensão física correspondente em centímetros.
-      // Renderização direta em Canvas: não depende de SVG/foreignObject,
-      // cuja conversão varia entre navegadores.
+      // Captura a própria composição HTML da pré-visualização.
+      // O navegador aplica novamente o CSS original e rasteriza a carta inteira
+      // na resolução de impressão, sem redesenhar moldura, ilustração ou textos.
+      async function imageToDataUrl(img) {
+        const src = img.currentSrc || img.src;
+        if (!src) return '';
+        if (src.startsWith('data:')) return src;
+        const response = await fetch(src, { mode: 'cors', credentials: 'omit' });
+        if (!response.ok) {
+          throw new Error('Não foi possível incorporar uma imagem da carta (HTTP ' + response.status + ').');
+        }
+        const blob = await response.blob();
+        return await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error('Falha ao preparar uma imagem da carta.'));
+          reader.readAsDataURL(blob);
+        });
+      }
+
       async function captureCardPng() {
         await Promise.all([...card.querySelectorAll('img')].map(waitForImage));
+        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
         const widthCm = Number(val('cardSize'));
         const heightCm = widthCm * 1.4;
         const dpi = 300;
         const pixelWidth = Math.round(widthCm / 2.54 * dpi);
         const pixelHeight = Math.round(heightCm / 2.54 * dpi);
-        if (!card.clientWidth || !card.clientHeight) {
+        const sourceWidth = card.clientWidth;
+        const sourceHeight = card.clientHeight;
+        if (!sourceWidth || !sourceHeight || !pixelWidth || !pixelHeight) {
           throw new Error('A pré-visualização da carta não está pronta. Atualize a carta e tente novamente.');
         }
-        const scale = pixelWidth / card.clientWidth;
-        const canvas = document.createElement('canvas');
-        canvas.width = pixelWidth;
-        canvas.height = pixelHeight;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) throw new Error('O navegador não conseguiu criar a área de desenho.');
 
-        const cardRect = card.getBoundingClientRect();
-        const cardStyle = getComputedStyle(card);
-        ctx.fillStyle = cardStyle.backgroundColor || 'transparent';
-        ctx.fillRect(0, 0, pixelWidth, pixelHeight);
-
-        const beforeStyle = getComputedStyle(card, '::before');
-        ctx.fillStyle = beforeStyle.backgroundColor || '#30213f';
-        ctx.fillRect(pixelWidth * 0.08, pixelHeight * 0.08, pixelWidth * 0.84, pixelHeight * 0.84);
-
-        const artWindow = card.querySelector('.art-window');
-        const artRect = artWindow.getBoundingClientRect();
-        const ax = (artRect.left - cardRect.left) * scale;
-        const ay = (artRect.top - cardRect.top) * scale;
-        const aw = artRect.width * scale;
-        const ah = artRect.height * scale;
-        ctx.fillStyle = getComputedStyle(artWindow).backgroundColor || beforeStyle.backgroundColor || '#30213f';
-        ctx.fillRect(ax, ay, aw, ah);
-
-        const art = $('art');
-        if (art.getAttribute('src')) {
-          if (!art.complete || !art.naturalWidth) {
-            throw new Error('A ilustração não foi carregada. Confira a imagem e tente exportar novamente.');
-          }
-          const ratio = Math.min(aw / art.naturalWidth, ah / art.naturalHeight);
-          const dw = art.naturalWidth * ratio;
-          const dh = art.naturalHeight * ratio;
-          ctx.drawImage(art, ax + (aw - dw) / 2, ay + (ah - dh) / 2, dw, dh);
-        }
-
-        // A moldura tem z-index 5; os textos têm z-index 8 e ficam acima dela.
-        const frame = $('frame');
-        if (frame.getAttribute('src')) {
-          if (!frame.complete || !frame.naturalWidth) {
-            throw new Error('A moldura não foi carregada. Confira a imagem e tente exportar novamente.');
-          }
-          ctx.drawImage(frame, 0, 0, pixelWidth, pixelHeight);
-        }
-
-        for (const el of card.querySelectorAll('.txt')) {
-          const rect = el.getBoundingClientRect();
-          const style = getComputedStyle(el);
-          const x = (rect.left - cardRect.left) * scale;
-          const y = (rect.top - cardRect.top) * scale;
-          const w = rect.width * scale;
-          const h = rect.height * scale;
-          const fontSize = Math.max(1, parseFloat(style.fontSize) * scale);
-          const lineHeight = (parseFloat(style.lineHeight) || fontSize / scale * 1.1) * scale;
-          const padL = (parseFloat(style.paddingLeft) || 0) * scale;
-          const padR = (parseFloat(style.paddingRight) || 0) * scale;
-          const padT = (parseFloat(style.paddingTop) || 0) * scale;
-          const padB = (parseFloat(style.paddingBottom) || 0) * scale;
-          const maxWidth = Math.max(1, w - padL - padR);
-          const maxHeight = Math.max(1, h - padT - padB);
-          let content = el.textContent.replace(/\s*$/, '');
-          if (style.textTransform === 'uppercase') content = content.toUpperCase();
-
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(x, y, w, h);
-          ctx.clip();
-          ctx.font = style.fontWeight + ' ' + fontSize + 'px ' + style.fontFamily;
-          ctx.fillStyle = style.color || '#fff1c9';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.shadowColor = 'rgba(0,0,0,0.8)';
-          ctx.shadowBlur = 3 * scale;
-          ctx.shadowOffsetY = 1 * scale;
-
-          const wrapParagraph = paragraph => {
-            const words = paragraph.split(/\s+/).filter(Boolean);
-            const lines = [];
-            let line = '';
-            for (const word of words) {
-              const candidate = line ? line + ' ' + word : word;
-              if (ctx.measureText(candidate).width <= maxWidth) {
-                line = candidate;
-              } else {
-                if (line) lines.push(line);
-                if (ctx.measureText(word).width <= maxWidth) {
-                  line = word;
-                } else {
-                  let fragment = '';
-                  for (const character of word) {
-                    if (fragment && ctx.measureText(fragment + character).width > maxWidth) {
-                      lines.push(fragment);
-                      fragment = character;
-                    } else fragment += character;
-                  }
-                  line = fragment;
-                }
-              }
-            }
-            if (line) lines.push(line);
-            return lines;
-          };
-          const lines = content.split(/\r?\n/).flatMap(wrapParagraph);
-          const visibleLines = Math.max(1, Math.floor(maxHeight / lineHeight));
-          const shown = lines.slice(0, visibleLines);
-          const totalHeight = shown.length * lineHeight;
-          const startY = y + padT + (maxHeight - totalHeight) / 2 + lineHeight / 2;
-          const centerX = x + padL + maxWidth / 2;
-          shown.forEach((line, index) => ctx.fillText(line, centerX, startY + index * lineHeight, maxWidth));
-          ctx.restore();
-        }
-
-        const pngBlob = await new Promise((resolve, reject) => {
-          canvas.toBlob(blob => blob ? resolve(blob) :
-            reject(new Error('O navegador não conseguiu gerar o arquivo PNG.')), 'image/png');
+        // Clona somente a carta, mantendo as dimensões CSS originais.
+        // O SVG amplia essa composição completa até os 300 dpi desejados.
+        const clone = card.cloneNode(true);
+        clone.removeAttribute('id');
+        clone.style.setProperty('width', sourceWidth + 'px', 'important');
+        clone.style.setProperty('height', sourceHeight + 'px', 'important');
+        clone.style.setProperty('box-shadow', 'none', 'important');
+        clone.querySelectorAll('.txt').forEach(el => {
+          el.classList.remove('selected');
+          el.querySelectorAll('.handle').forEach(handle => handle.remove());
+          el.style.setProperty('border', '0', 'important');
+          el.style.setProperty('cursor', 'default', 'important');
         });
-        const png = new Uint8Array(await pngBlob.arrayBuffer());
-        const type = new TextEncoder().encode('pHYs');
-        const data = new Uint8Array(9);
-        const view = new DataView(data.buffer);
-        view.setUint32(0, Math.round(pixelWidth / (widthCm / 100)));
-        view.setUint32(4, Math.round(pixelHeight / (heightCm / 100)));
-        data[8] = 1;
-        const crcInput = new Uint8Array(type.length + data.length);
-        crcInput.set(type, 0);
-        crcInput.set(data, type.length);
-        const crc = crc32(crcInput);
-        const chunk = new Uint8Array(4 + crcInput.length + 4);
-        const chunkView = new DataView(chunk.buffer);
-        chunkView.setUint32(0, data.length);
-        chunk.set(crcInput, 4);
-        chunkView.setUint32(4 + crcInput.length, crc);
-        const result = new Uint8Array(png.length + chunk.length);
-        result.set(png.subarray(0, 33), 0);
-        result.set(chunk, 33);
-        result.set(png.subarray(33), 33 + chunk.length);
-        return result;
+
+        const sourceImages = [...card.querySelectorAll('img')];
+        const cloneImages = [...clone.querySelectorAll('img')];
+        for (let i = 0; i < cloneImages.length; i++) {
+          const source = sourceImages[i];
+          if (!source) continue;
+          if (source.getAttribute('src')) {
+            if (!source.complete || !source.naturalWidth) {
+              throw new Error('Uma imagem da carta não foi carregada. Confira a moldura e a ilustração.');
+            }
+            cloneImages[i].setAttribute('src', await imageToDataUrl(source));
+          }
+        }
+
+        const stylesheet = document.querySelector('style').textContent;
+        const cloneMarkup = new XMLSerializer().serializeToString(clone);
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xhtml="http://www.w3.org/1999/xhtml" width="' +
+          pixelWidth + '" height="' + pixelHeight + '" viewBox="0 0 ' +
+          sourceWidth + ' ' + sourceHeight + '">' +
+          '<foreignObject x="0" y="0" width="' + sourceWidth + '" height="' + sourceHeight + '">' +
+          '<xhtml:div xmlns="http://www.w3.org/1999/xhtml" style="width:' +
+          sourceWidth + 'px;height:' + sourceHeight + 'px;overflow:hidden;">' +
+          '<xhtml:style><![CDATA[' + stylesheet +
+          '\n.card{width:' + sourceWidth + 'px!important;height:' + sourceHeight +
+          'px!important;box-shadow:none!important;}\n.card .txt{border:0!important;}]]></xhtml:style>' +
+          cloneMarkup + '</xhtml:div></foreignObject></svg>';
+
+        const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+        const svgUrl = URL.createObjectURL(svgBlob);
+        try {
+          const image = new Image();
+          const loaded = new Promise((resolve, reject) => {
+            image.onload = resolve;
+            image.onerror = () => reject(new Error('O navegador não conseguiu capturar a carta. Atualize a pré-visualização e tente novamente.'));
+          });
+          image.src = svgUrl;
+          await loaded;
+
+          const canvas = document.createElement('canvas');
+          canvas.width = pixelWidth;
+          canvas.height = pixelHeight;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('O navegador não conseguiu preparar a imagem para exportação.');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(image, 0, 0, pixelWidth, pixelHeight);
+
+          const pngBlob = await new Promise((resolve, reject) => {
+            canvas.toBlob(blob => blob ? resolve(blob) :
+              reject(new Error('O navegador não conseguiu gerar o arquivo PNG.')), 'image/png');
+          });
+          const png = new Uint8Array(await pngBlob.arrayBuffer());
+
+          // Registra a resolução física em pixels por metro (300 dpi).
+          const type = new TextEncoder().encode('pHYs');
+          const data = new Uint8Array(9);
+          const view = new DataView(data.buffer);
+          view.setUint32(0, Math.round(pixelWidth / (widthCm / 100)));
+          view.setUint32(4, Math.round(pixelHeight / (heightCm / 100)));
+          data[8] = 1;
+          const crcInput = new Uint8Array(type.length + data.length);
+          crcInput.set(type, 0);
+          crcInput.set(data, type.length);
+          const crc = crc32(crcInput);
+          const chunk = new Uint8Array(4 + crcInput.length + 4);
+          const chunkView = new DataView(chunk.buffer);
+          chunkView.setUint32(0, data.length);
+          chunk.set(crcInput, 4);
+          chunkView.setUint32(4 + crcInput.length, crc);
+          const result = new Uint8Array(png.length + chunk.length);
+          result.set(png.subarray(0, 33), 0);
+          result.set(chunk, 33);
+          result.set(png.subarray(33), 33 + chunk.length);
+          return result;
+        } finally {
+          URL.revokeObjectURL(svgUrl);
+        }
       }
 
       let pendingDownloadUrl = null;
