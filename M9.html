@@ -370,6 +370,32 @@
       font-size: 0.82rem;
     }
 
+    .download-area {
+      grid-column: 1 / -1;
+      margin-top: 8px;
+      padding: 12px;
+      border: 1px solid #47765f;
+      border-radius: 9px;
+      background: #172b23;
+      color: #e8f4eb;
+      overflow-wrap: anywhere;
+    }
+    .download-area[hidden] { display: none; }
+    .download-area a {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 10px 14px;
+      border-radius: 7px;
+      background: #28513f;
+      color: #ffffff;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .download-area a:focus-visible {
+      outline: 3px solid #9bd5b2;
+      outline-offset: 3px;
+    }
+
     .print-sheet {
       display: none;
     }
@@ -593,6 +619,7 @@
       <p id="status" class="hint" aria-live="polite">
         Arranjo padrão carregado. O salvamento local fica neste navegador.
       </p>
+      <div id="downloadArea" class="download-area" hidden aria-live="polite"></div>
       <p class="hint">
         Para usar o arranjo em outro navegador ou computador, exporte o JSON
         e depois importe-o no outro dispositivo. Para imprimir, escolha A4,
@@ -874,7 +901,10 @@
           el.appendChild(handle);
         }
         syncSize();
-        document.querySelectorAll('.txt').forEach(fitFontToBox);
+        // A medição é adiada até o navegador recalcular as dimensões e o texto.
+        requestAnimationFrame(() => {
+          document.querySelectorAll('.txt').forEach(fitFontToBox);
+        });
       }
 
       function syncSize() {
@@ -886,29 +916,33 @@
         document.documentElement.style.setProperty('--print-h', h + 'cm');
       }
 
-      // Reaplica os valores atuais dos menus e campos à pré-visualização,
-      // sem restaurar padrões nem alterar os dados salvos nos decks.
-      function refreshCardView() {
-        syncText();
+      // Reconstrói a pré-visualização a partir dos campos e das imagens já carregadas.
+      // O mesmo procedimento é usado ao abrir cards e pelo botão Atualizar.
+      async function refreshCardView(message = 'Carta atualizada com as configurações atuais dos menus e campos.') {
         syncSize();
         applyArtBg();
+        syncText();
+
+        await Promise.all([waitForImage(frame), waitForImage(art)]);
+        await new Promise(resolve => requestAnimationFrame(() =>
+          requestAnimationFrame(resolve)));
 
         const frameSrc = frame.currentSrc || frame.src;
-        if (frameSrc && frame.complete && frame.naturalWidth) {
-          detectFrameBg(frameSrc);
-        }
+        if (frameSrc && frame.complete && frame.naturalWidth) detectFrameBg(frameSrc);
 
         const artSrc = art.currentSrc || art.src;
-        if (autoArtBg.checked && artSrc && art.complete && art.naturalWidth) {
-          detectArtBg(artSrc);
-        }
+        if (autoArtBg.checked && artSrc && art.complete && art.naturalWidth) detectArtBg(artSrc);
 
         document.querySelectorAll('.txt').forEach(fitFontToBox);
         choose(selected);
-        $('status').textContent = 'Carta atualizada com as configurações atuais dos menus e campos.';
+        if (message) $('status').textContent = message;
       }
 
-      $('refreshCard').addEventListener('click', refreshCardView);
+      $('refreshCard').addEventListener('click', () => {
+        refreshCardView().catch(error => {
+          $('status').textContent = 'Não foi possível atualizar a carta: ' + error.message;
+        });
+      });
 
       function geometry(el) {
         const s = getComputedStyle(el);
@@ -938,8 +972,9 @@
         fitFontToBox(el);
       }
 
-      // Ajusta somente o tamanho da fonte, nunca a proporção das letras.
-      // O valor salvo em data-max-font é o teto configurável pelo usuário.
+      // Ajusta a fonte sem permitir que ela desapareça por redução excessiva.
+      // Se o conteúdo não couber, preserva um tamanho mínimo legível; o usuário
+      // pode então ampliar a caixa ou reduzir o texto.
       function fitFontToBox(el) {
         if (!el || !card.clientWidth) return;
         const maxCqw = parseFloat(el.dataset.maxFont) || 2.5;
@@ -947,6 +982,7 @@
         const rect = el.getBoundingClientRect();
         if (!rect.width || !rect.height) return;
 
+        const minPx = Math.min(maxPx, Math.max(7, card.clientWidth * 0.012));
         const probe = el.cloneNode(true);
         probe.classList.remove('selected');
         probe.querySelectorAll('.handle').forEach(node => node.remove());
@@ -960,22 +996,22 @@
         probe.style.maxWidth = 'none';
         probe.style.maxHeight = 'none';
         probe.style.overflow = 'hidden';
-        probe.style.display = 'grid';
-        probe.style.placeItems = 'center';
+        probe.style.display = 'block';
         probe.style.boxSizing = 'border-box';
         probe.style.border = '0';
         probe.style.margin = '0';
+        probe.style.padding = '0';
         probe.style.textAlign = 'center';
         probe.style.whiteSpace = 'pre-wrap';
         probe.style.overflowWrap = 'anywhere';
-        probe.style.wordBreak = 'normal';
+        probe.style.wordBreak = 'break-word';
         probe.style.lineHeight = getComputedStyle(el).lineHeight;
         document.body.appendChild(probe);
 
-        let low = 1;
-        let high = maxPx;
-        let best = 1;
-        for (let i = 0; i < 14; i++) {
+        let low = minPx;
+        let high = Math.max(minPx, maxPx);
+        let best = minPx;
+        for (let i = 0; i < 16; i++) {
           const mid = (low + high) / 2;
           probe.style.fontSize = mid + 'px';
           if (probe.scrollHeight <= probe.clientHeight + 1 &&
@@ -1219,6 +1255,8 @@
         }
 
         choose(selected);
+        // Atualiza novamente após aplicar campos, geometrias e fontes/imagens.
+        refreshCardView('');
       }
 
       const storageKey = 'bmm-m10-layouts';
@@ -1421,6 +1459,7 @@
           $('layoutName').value = cardName;
           $('deckName').value = deckName;
           $('deckCardName').value = cardName;
+          await refreshCardView('');
           $('status').textContent = 'Card “' + cardName + '” aberto para edição.';
         } catch (error) { showDeckError(error); }
       };
@@ -1611,19 +1650,13 @@
       function offerDownload(blob, filename, message) {
         if (pendingDownloadUrl) URL.revokeObjectURL(pendingDownloadUrl);
         pendingDownloadUrl = URL.createObjectURL(blob);
+        const area = $('downloadArea');
         const link = document.createElement('a');
         link.href = pendingDownloadUrl;
         link.download = filename;
-        link.textContent = 'Clique aqui para baixar ' + filename;
-        link.style.display = 'inline-block';
-        link.style.marginTop = '8px';
-        link.style.padding = '9px 12px';
-        link.style.borderRadius = '7px';
-        link.style.background = '#28513f';
-        link.style.color = '#ffffff';
-        link.style.fontWeight = '700';
-        link.style.textDecoration = 'none';
-        $('status').replaceChildren(document.createTextNode(message + ' '), link);
+        link.textContent = 'Baixar ' + filename;
+        area.replaceChildren(document.createTextNode(message), link);
+        area.hidden = false;
       }
 
       function crc32(bytes) {
@@ -1674,7 +1707,7 @@
           original = getLayout();
           $('status').textContent = 'Preparando PNG de “' + cardName + '”…';
           applyLayout(layout);
-          await new Promise(resolve => setTimeout(resolve, 120));
+          await refreshCardView('');
           const png = await captureCardPng();
           offerDownload(new Blob([png], { type: 'image/png' }),
             safeName(cardName) + '.png',
@@ -1702,7 +1735,7 @@
           for (let i = 0; i < names.length; i++) {
             $('status').textContent = 'Exportando PNG ' + (i + 1) + ' de ' + names.length + '…';
             applyLayout(deck.cards[names[i]]);
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await refreshCardView('');
             const png = await captureCardPng();
             files.push({ name: safeName(deckName) + '/' + safeName(names[i]) + '.png', data: png });
           }
