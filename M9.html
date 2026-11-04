@@ -1192,10 +1192,78 @@
         };
       }
 
+      // Converte geometrias antigas para o formato percentual usado pelo editor atual.
+      // Valores ausentes ou inválidos não são aplicados: a caixa conserva a posição CSS padrão.
+      function normalizeSavedGeometry(g) {
+        if (!g || typeof g !== 'object') return null;
+        const read = (...keys) => {
+          for (const key of keys) {
+            const value = g[key];
+            if (value === undefined || value === null || value === '') continue;
+            const n = parseFloat(value);
+            if (Number.isFinite(n)) return n;
+          }
+          return NaN;
+        };
+
+        let x = read('x', 'leftPct', 'left');
+        let y = read('y', 'topPct', 'top');
+        let w = read('w', 'widthPct', 'width');
+        let h = read('h', 'heightPct', 'height');
+        if (![x, y, w, h].every(Number.isFinite)) return null;
+
+        // Algumas versões antigas podem ter gravado proporções entre 0 e 1.
+        if (x >= 0 && x <= 1 && y >= 0 && y <= 1 &&
+            w > 0 && w <= 1 && h > 0 && h <= 1) {
+          x *= 100; y *= 100; w *= 100; h *= 100;
+        }
+
+        // Também aceita coordenadas em pixels quando explicitamente indicadas.
+        if (typeof g.left === 'string' && g.left.trim().endsWith('px')) x = x / card.clientWidth * 100;
+        if (typeof g.top === 'string' && g.top.trim().endsWith('px')) y = y / card.clientHeight * 100;
+        if (typeof g.width === 'string' && g.width.trim().endsWith('px')) w = w / card.clientWidth * 100;
+        if (typeof g.height === 'string' && g.height.trim().endsWith('px')) h = h / card.clientHeight * 100;
+
+        if (x < 0 || y < 0 || x >= 100 || y >= 100 ||
+            w <= 0 || h <= 0 || w > 100 || h > 100) return null;
+
+        const font = read('font', 'maxFont', 'fontCqw');
+        return {
+          x, y, w, h,
+          font: Number.isFinite(font) ? clamp(font, 0.8, 12) : 2.5,
+          align: 'center'
+        };
+      }
+
+      function resetTextBoxGeometry() {
+        document.querySelectorAll('.txt').forEach(el => {
+          ['left', 'top', 'width', 'height', 'right', 'bottom',
+           'font-size', 'text-align', 'display', 'visibility', 'opacity',
+           'transform'].forEach(property => el.style.removeProperty(property));
+          delete el.dataset.maxFont;
+        });
+      }
+
+      function applySavedTextBoxes(boxes) {
+        if (!boxes || typeof boxes !== 'object') return;
+        document.querySelectorAll('.txt').forEach(el => {
+          const field = el.dataset.field || '';
+          const cap = field ? field[0].toUpperCase() + field.slice(1) : '';
+          const saved = boxes[el.id] || (field && boxes[field]) ||
+            (cap && boxes['v' + cap]);
+          const geometry = normalizeSavedGeometry(saved);
+          if (geometry) applyGeom(el, geometry);
+        });
+      }
+
       function applyLayout(data) {
         if (!data || data.format !== 'BMM-card-layout') {
           throw Error('Este não parece ser um arquivo de arranjo BMM válido.');
         }
+
+        // Limpa estilos de caixas carregadas anteriormente antes de interpretar
+        // o novo card. Isso impede que geometrias antigas/incompletas as colapsem.
+        resetTextBoxGeometry();
 
         if (data.autoArtBg !== undefined) autoArtBg.checked = data.autoArtBg;
         if (data.artBg !== undefined) {
@@ -1211,13 +1279,6 @@
         if (data.fields) {
           fields.forEach(id => {
             if (data.fields[id] !== undefined) $(id).value = data.fields[id];
-          });
-        }
-
-        if (data.boxes) {
-          Object.entries(data.boxes).forEach(([id, g]) => {
-            const el = $(id);
-            if (el && g) applyGeom(el, g);
           });
         }
 
@@ -1246,16 +1307,9 @@
 
         if (data.name) $('layoutName').value = data.name;
 
+        applySavedTextBoxes(data.boxes);
         syncText();
-
-        if (data.boxes) {
-          Object.entries(data.boxes).forEach(([id, g]) => {
-            if ($(id) && g) applyGeom($(id), g);
-          });
-        }
-
         choose(selected);
-        // Atualiza novamente após aplicar campos, geometrias e fontes/imagens.
         refreshCardView('');
       }
 
