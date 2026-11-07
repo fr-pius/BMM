@@ -1717,16 +1717,40 @@
       }
 
       let pendingDownloadUrl = null;
+      function showDownloadMessage(message, isError = false) {
+        const area = $('downloadArea');
+        const oldLink = area.querySelector('a');
+        const note = document.createElement('p');
+        note.id = 'downloadMessage';
+        note.style.margin = '0';
+        note.style.color = isError ? '#ffd0c9' : '#e8f4eb';
+        note.setAttribute('role', isError ? 'alert' : 'status');
+        note.textContent = message;
+        area.hidden = false;
+        area.removeAttribute('hidden');
+        area.style.display = 'block';
+        area.setAttribute('aria-live', 'polite');
+        area.replaceChildren(note);
+        if (oldLink) area.appendChild(oldLink);
+      }
+
       function offerDownload(blob, filename, message) {
+        const newUrl = URL.createObjectURL(blob);
         if (pendingDownloadUrl) URL.revokeObjectURL(pendingDownloadUrl);
-        pendingDownloadUrl = URL.createObjectURL(blob);
+        pendingDownloadUrl = newUrl;
         const area = $('downloadArea');
         const link = document.createElement('a');
         link.href = pendingDownloadUrl;
         link.download = filename;
         link.textContent = 'Baixar ' + filename;
-        area.replaceChildren(document.createTextNode(message), link);
         area.hidden = false;
+        area.removeAttribute('hidden');
+        area.style.display = 'block';
+        area.setAttribute('aria-live', 'polite');
+        const note = document.createElement('p');
+        note.style.margin = '0';
+        note.textContent = message;
+        area.replaceChildren(note, link);
       }
 
       function crc32(bytes) {
@@ -1761,64 +1785,87 @@
         const deckName = $('deckSelect').value;
         const cardName = $('deckCardSelect').value;
         if (!deckName || !cardName) {
+          showDownloadMessage('Selecione um deck e um card salvo para exportar.', true);
           $('status').textContent = 'Selecione um deck e um card salvo para exportar.';
           return;
         }
 
         let original;
+        let resultBlob = null;
+        let resultMessage = '';
+        let resultFilename = '';
         try {
+          showDownloadMessage('Preparando o PNG de “' + cardName + '”…');
+          $('status').textContent = 'Preparando PNG de “' + cardName + '”…';
           const deck = await getDeck(deckName);
           const layout = deck?.cards?.[cardName];
-          if (!layout) {
-            $('status').textContent = 'O card selecionado não foi encontrado.';
-            return;
-          }
+          if (!layout) throw new Error('O card selecionado não foi encontrado.');
 
           original = getLayout();
-          $('status').textContent = 'Preparando PNG de “' + cardName + '”…';
           applyLayout(layout);
           await refreshCardView('');
           const png = await captureCardPng();
-          offerDownload(new Blob([png], { type: 'image/png' }),
-            safeName(cardName) + '.png',
-            'PNG preparado: ' + cardName + ' (' + val('cardSize') + ' × ' +
-            (Number(val('cardSize')) * 1.4).toFixed(2) + ' cm, 300 dpi).');
+          resultBlob = new Blob([png], { type: 'image/png' });
+          resultFilename = safeName(cardName) + '.png';
+          resultMessage = 'PNG preparado: ' + cardName + ' (' + val('cardSize') + ' × ' +
+            (Number(val('cardSize')) * 1.4).toFixed(2) + ' cm, 300 dpi).';
         } catch (error) {
+          showDownloadMessage('Não foi possível preparar o PNG: ' + (error?.message || 'erro desconhecido.'), true);
           showDeckError(error);
         } finally {
           if (original) {
             try { applyLayout(original); } catch (_) {}
           }
         }
+        if (resultBlob) {
+          offerDownload(resultBlob, resultFilename, resultMessage);
+          $('status').textContent = resultMessage;
+        }
       };
 
       $('exportDeckPng').onclick = async () => {
         const deckName = $('deckSelect').value;
-        if (!deckName) { $('status').textContent = 'Salve ou selecione um deck antes de exportar.'; return; }
+        if (!deckName) {
+          showDownloadMessage('Salve ou selecione um deck antes de exportar.', true);
+          $('status').textContent = 'Salve ou selecione um deck antes de exportar.';
+          return;
+        }
         let original;
+        let resultBlob = null;
+        let resultFilename = '';
+        let resultMessage = '';
         try {
+          showDownloadMessage('Preparando a exportação do deck “' + deckName + '”…');
           const deck = await getDeck(deckName);
           const names = Object.keys(deck?.cards || {}).sort((a,b) => a.localeCompare(b, 'pt-BR'));
-          if (!names.length) { $('status').textContent = 'Este deck não contém cards.'; return; }
+          if (!names.length) throw new Error('Este deck não contém cards.');
+
           original = getLayout();
           const files = [{ name: safeName(deckName) + '/', data: new Uint8Array(0) }];
           for (let i = 0; i < names.length; i++) {
-            $('status').textContent = 'Exportando PNG ' + (i + 1) + ' de ' + names.length + '…';
+            const progress = 'Exportando PNG ' + (i + 1) + ' de ' + names.length + '…';
+            showDownloadMessage(progress);
+            $('status').textContent = progress;
             applyLayout(deck.cards[names[i]]);
             await refreshCardView('');
             const png = await captureCardPng();
             files.push({ name: safeName(deckName) + '/' + safeName(names[i]) + '.png', data: png });
           }
-          const zip = makeZip(files);
-          offerDownload(zip, safeName(deckName) + '_PNGs.zip',
-            'ZIP preparado com ' + names.length +
-            ' PNG(s). Cada arquivo conserva a dimensão física escolhida no gerador.');
+          resultBlob = makeZip(files);
+          resultFilename = safeName(deckName) + '_PNGs.zip';
+          resultMessage = 'ZIP preparado com ' + names.length +
+            ' PNG(s). Cada arquivo conserva a dimensão física escolhida no gerador.';
         } catch (error) {
+          showDownloadMessage('Não foi possível exportar o deck: ' + (error?.message || 'erro desconhecido.'), true);
           showDeckError(error);
         } finally {
           if (original) {
             try { applyLayout(original); } catch (_) {}
           }
+        }
+        if (resultBlob) {
+          offerDownload(resultBlob, resultFilename, resultMessage);
+          $('status').textContent = resultMessage;
         }
       };
       refreshDeckLists().catch(() => {});
