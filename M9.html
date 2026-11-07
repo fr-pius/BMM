@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Editor de cartas colecionáveis — M9</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
     :root {
       --cw: 7.5cm;
@@ -1590,217 +1591,138 @@
       }
 
       async function captureCardPng() {
-        await Promise.all([...card.querySelectorAll('img')].map(waitForImage));
-        if (document.fonts && document.fonts.ready) await document.fonts.ready;
-
         const widthCm = Number(val('cardSize'));
         const heightCm = widthCm * 1.4;
         const dpi = 300;
         const pixelWidth = Math.round(widthCm / 2.54 * dpi);
         const pixelHeight = Math.round(heightCm / 2.54 * dpi);
-        const sourceWidth = card.clientWidth;
-        const sourceHeight = card.clientHeight;
-        if (!sourceWidth || !sourceHeight || !pixelWidth || !pixelHeight) {
-          throw new Error('A pré-visualização da carta não está pronta. Atualize a carta e tente novamente.');
+
+        if (typeof window.html2canvas !== 'function') {
+          throw new Error('O componente de captura não carregou. Verifique a conexão com a internet e atualize a página.');
         }
 
-        // Renderiza a composição diretamente no Canvas. Todas as imagens são
-        // convertidas primeiro em Data URLs; assim, nenhuma origem externa é
-        // desenhada no Canvas e o navegador não bloqueia a exportação.
-        const scaleX = pixelWidth / sourceWidth;
-        const scaleY = pixelHeight / sourceHeight;
-        const canvas = document.createElement('canvas');
-        canvas.width = pixelWidth;
-        canvas.height = pixelHeight;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) throw new Error('O navegador não conseguiu preparar a imagem para exportação.');
-        ctx.scale(scaleX, scaleY);
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
+        await Promise.all([...card.querySelectorAll('img')].map(waitForImage));
+        if (document.fonts && document.fonts.ready) await document.fonts.ready;
 
-        const cardStyle = getComputedStyle(card);
-        const cardRect = card.getBoundingClientRect();
-        const rectOf = el => {
-          const r = el.getBoundingClientRect();
-          return { x: r.left - cardRect.left, y: r.top - cardRect.top, w: r.width, h: r.height };
-        };
-        const colorOf = value => value && value !== 'transparent' ? value : 'rgba(0,0,0,0)';
+        // Usa a mesma estrutura HTML/CSS da folha de impressão, sem redesenhar
+        // moldura, ilustração ou textos em Canvas manual.
+        const wrap = createPrintCard();
+        wrap.style.cssText = [
+          'position:fixed',
+          'left:-100000px',
+          'top:0',
+          'width:' + widthCm + 'cm',
+          'height:' + heightCm + 'cm',
+          'overflow:hidden',
+          'background:transparent',
+          'z-index:-1'
+        ].join(';');
 
-        ctx.fillStyle = colorOf(cardStyle.backgroundColor);
-        ctx.fillRect(0, 0, sourceWidth, sourceHeight);
+        const clone = wrap.querySelector('.card');
+        if (!clone) throw new Error('Não foi possível preparar a composição de impressão.');
+        clone.style.setProperty('width', '100%', 'important');
+        clone.style.setProperty('height', '100%', 'important');
+        clone.style.setProperty('box-shadow', 'none', 'important');
 
-        // Fundo decorativo definido pelo pseudo-elemento .card::before.
-        const beforeStyle = getComputedStyle(card, '::before');
-        const beforeRect = {
-          x: parseFloat(beforeStyle.left) || 0,
-          y: parseFloat(beforeStyle.top) || 0,
-          w: parseFloat(beforeStyle.width) || 0,
-          h: parseFloat(beforeStyle.height) || 0
-        };
-        if (beforeRect.w && beforeRect.h) {
-          ctx.fillStyle = colorOf(beforeStyle.backgroundColor);
-          ctx.fillRect(beforeRect.x, beforeRect.y, beforeRect.w, beforeRect.h);
-        }
-
-        async function loadEmbeddedImage(source) {
-          if (!source || !source.getAttribute('src')) return null;
-          if (!source.complete || !source.naturalWidth) {
-            throw new Error('Uma imagem da carta não foi carregada. Confira a moldura e a ilustração.');
-          }
-          const dataUrl = await imageToDataUrl(source);
-          const image = new Image();
-          const ready = new Promise((resolve, reject) => {
-            image.onload = resolve;
-            image.onerror = () => reject(new Error('Não foi possível decodificar uma imagem incorporada à carta.'));
-          });
-          image.src = dataUrl;
-          await ready;
-          return image;
-        }
-
-        function drawImageInBox(image, box, fit) {
-          if (!image || !box.w || !box.h) return;
-          if (fit === 'contain') {
-            const ratio = Math.min(box.w / image.naturalWidth, box.h / image.naturalHeight);
-            const w = image.naturalWidth * ratio;
-            const h = image.naturalHeight * ratio;
-            ctx.drawImage(image, box.x + (box.w - w) / 2, box.y + (box.h - h) / 2, w, h);
-          } else if (fit === 'cover') {
-            const ratio = Math.max(box.w / image.naturalWidth, box.h / image.naturalHeight);
-            const w = image.naturalWidth * ratio;
-            const h = image.naturalHeight * ratio;
-            ctx.save();
-            ctx.beginPath();
-            ctx.rect(box.x, box.y, box.w, box.h);
-            ctx.clip();
-            ctx.drawImage(image, box.x + (box.w - w) / 2, box.y + (box.h - h) / 2, w, h);
-            ctx.restore();
-          } else {
-            ctx.drawImage(image, box.x, box.y, box.w, box.h);
-          }
-        }
-
-        const artWindow = card.querySelector('.art-window');
-        if (artWindow) {
-          const artBox = rectOf(artWindow);
-          const artStyle = getComputedStyle(artWindow);
-          ctx.fillStyle = colorOf(artStyle.backgroundColor);
-          ctx.fillRect(artBox.x, artBox.y, artBox.w, artBox.h);
-          const artElement = artWindow.querySelector('img');
-          const artImage = await loadEmbeddedImage(artElement);
-          if (artImage) {
-            const artImageStyle = getComputedStyle(artElement);
-            drawImageInBox(artImage, rectOf(artElement), artImageStyle.objectFit || 'contain');
-          }
-        }
-
-        const frameElement = card.querySelector('img.frame');
-        const frameImage = await loadEmbeddedImage(frameElement);
-        if (frameImage) drawImageInBox(frameImage, rectOf(frameElement), 'fill');
-
-        function wrapLine(text, maxWidth) {
-          const words = text.split(/\\s+/).filter(Boolean);
-          const lines = [];
-          let line = '';
-          for (const word of words) {
-            const candidate = line ? line + ' ' + word : word;
-            if (ctx.measureText(candidate).width <= maxWidth || !line) {
-              if (ctx.measureText(candidate).width <= maxWidth) line = candidate;
-              else {
-                let part = '';
-                for (const char of word) {
-                  if (part && ctx.measureText(part + char).width > maxWidth) {
-                    lines.push(part);
-                    part = char;
-                  } else part += char;
-                }
-                line = part;
-              }
-            } else {
-              lines.push(line);
-              line = word;
-            }
-          }
-          if (line) lines.push(line);
-          return lines;
-        }
-
-        // Os textos são posicionados pelas mesmas caixas CSS da pré-visualização.
-        for (const el of card.querySelectorAll('.txt')) {
-          const box = rectOf(el);
-          if (!box.w || !box.h) continue;
-          const style = getComputedStyle(el);
-          const paddingLeft = parseFloat(style.paddingLeft) || 0;
-          const paddingRight = parseFloat(style.paddingRight) || 0;
-          const paddingTop = parseFloat(style.paddingTop) || 0;
-          const paddingBottom = parseFloat(style.paddingBottom) || 0;
-          const maxWidth = Math.max(1, box.w - paddingLeft - paddingRight);
-          let value = el.textContent.replace(/\\s+$/, '');
-          if (style.textTransform === 'uppercase') value = value.toLocaleUpperCase('pt-BR');
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(box.x, box.y, box.w, box.h);
-          ctx.clip();
-          ctx.font = [style.fontStyle, style.fontVariant, style.fontWeight, style.fontSize, style.fontFamily]
-            .filter(Boolean).join(' ');
-          ctx.fillStyle = style.color;
-          ctx.textAlign = style.textAlign === 'left' || style.textAlign === 'right' ? style.textAlign : 'center';
-          ctx.textBaseline = 'middle';
-          const shadow = style.textShadow;
-          if (shadow && shadow !== 'none') {
-            const match = shadow.match(/^(.*?)\\s(-?[\\d.]+)px\\s(-?[\\d.]+)px(?:\\s(-?[\\d.]+)px)?$/);
-            if (match) {
-              ctx.shadowColor = match[1];
-              ctx.shadowOffsetX = parseFloat(match[2]) || 0;
-              ctx.shadowOffsetY = parseFloat(match[3]) || 0;
-              ctx.shadowBlur = parseFloat(match[4]) || 0;
-            }
-          }
-          const lineHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.1;
-          const paragraphs = value.split('\\n');
-          const lines = paragraphs.flatMap(paragraph => wrapLine(paragraph, maxWidth));
-          const totalHeight = lines.length * lineHeight;
-          let y = box.y + paddingTop + (box.h - paddingTop - paddingBottom - totalHeight) / 2 + lineHeight / 2;
-          const x = style.textAlign === 'left' ? box.x + paddingLeft :
-            style.textAlign === 'right' ? box.x + box.w - paddingRight : box.x + box.w / 2;
-          for (const line of lines) {
-            ctx.fillText(line, x, y, maxWidth);
-            y += lineHeight;
-          }
-          ctx.restore();
-        }
-
-        const pngBlob = await new Promise((resolve, reject) => {
-          try {
-            canvas.toBlob(blob => blob ? resolve(blob) :
-              reject(new Error('O navegador não conseguiu gerar o arquivo PNG.')), 'image/png');
-          } catch (error) {
-            reject(error);
-          }
+        // A folha de impressão também elimina os contornos de edição.
+        clone.querySelectorAll('.txt').forEach(el => {
+          el.style.setProperty('border-color', 'transparent', 'important');
+          el.style.setProperty('background', 'transparent', 'important');
         });
-        const png = new Uint8Array(await pngBlob.arrayBuffer());
+        clone.querySelectorAll('.handle').forEach(el => el.remove());
 
-        // Registra 300 dpi no próprio PNG para conservar o tamanho físico.
-        const type = new TextEncoder().encode('pHYs');
-        const data = new Uint8Array(9);
-        const view = new DataView(data.buffer);
-        view.setUint32(0, Math.round(pixelWidth / (widthCm / 100)));
-        view.setUint32(4, Math.round(pixelHeight / (heightCm / 100)));
-        data[8] = 1;
-        const crcInput = new Uint8Array(type.length + data.length);
-        crcInput.set(type, 0);
-        crcInput.set(data, type.length);
-        const crc = crc32(crcInput);
-        const chunk = new Uint8Array(4 + crcInput.length + 4);
-        const chunkView = new DataView(chunk.buffer);
-        chunkView.setUint32(0, data.length);
-        chunk.set(crcInput, 4);
-        chunkView.setUint32(4 + crcInput.length, crc);
-        const result = new Uint8Array(png.length + chunk.length);
-        result.set(png.subarray(0, 33), 0);
-        result.set(chunk, 33);
-        result.set(png.subarray(33), 33 + chunk.length);
-        return result;
+        // Incorpora as imagens para que a captura não seja bloqueada por CORS.
+        for (const img of clone.querySelectorAll('img')) {
+          const original = [...card.querySelectorAll('img')].find(source =>
+            source.className === img.className
+          );
+          if (!original) continue;
+          const dataUrl = await imageToDataUrl(original);
+          img.removeAttribute('srcset');
+          img.removeAttribute('sizes');
+          img.src = dataUrl;
+          if (img.decode) await img.decode();
+        }
+
+        document.body.appendChild(wrap);
+        try {
+          await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const rect = wrap.getBoundingClientRect();
+          if (!rect.width || !rect.height) {
+            throw new Error('A composição de impressão ficou sem dimensões. Atualize a carta e tente novamente.');
+          }
+
+          const canvas = await window.html2canvas(wrap, {
+            backgroundColor: null,
+            scale: pixelWidth / rect.width,
+            width: rect.width,
+            height: rect.height,
+            useCORS: true,
+            allowTaint: false,
+            logging: false,
+            imageTimeout: 15000
+          });
+
+          if (!canvas.width || !canvas.height) {
+            throw new Error('A captura da carta ficou vazia.');
+          }
+
+          // Normaliza exatamente as dimensões físicas escolhidas a 300 dpi.
+          if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+            const normalized = document.createElement('canvas');
+            normalized.width = pixelWidth;
+            normalized.height = pixelHeight;
+            const ctx = normalized.getContext('2d');
+            if (!ctx) throw new Error('Não foi possível finalizar a imagem PNG.');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(canvas, 0, 0, pixelWidth, pixelHeight);
+            canvas.width = 0;
+            canvas.height = 0;
+            return await addPngDpi(normalized, pixelWidth, pixelHeight, widthCm, heightCm);
+          }
+
+          return await addPngDpi(canvas, pixelWidth, pixelHeight, widthCm, heightCm);
+        } finally {
+          wrap.remove();
+        }
+      }
+
+      function addPngDpi(canvas, pixelWidth, pixelHeight, widthCm, heightCm) {
+        return new Promise((resolve, reject) => {
+          canvas.toBlob(async blob => {
+            if (!blob) {
+              reject(new Error('O navegador não conseguiu gerar o arquivo PNG.'));
+              return;
+            }
+            try {
+              const png = new Uint8Array(await blob.arrayBuffer());
+              // Registra 300 dpi no próprio PNG para conservar o tamanho físico.
+              const type = new TextEncoder().encode('pHYs');
+              const data = new Uint8Array(9);
+              const view = new DataView(data.buffer);
+              view.setUint32(0, Math.round(pixelWidth / (widthCm / 100)));
+              view.setUint32(4, Math.round(pixelHeight / (heightCm / 100)));
+              data[8] = 1;
+              const crcInput = new Uint8Array(type.length + data.length);
+              crcInput.set(type, 0);
+              crcInput.set(data, type.length);
+              const crc = crc32(crcInput);
+              const chunk = new Uint8Array(4 + crcInput.length + 4);
+              const chunkView = new DataView(chunk.buffer);
+              chunkView.setUint32(0, data.length);
+              chunk.set(crcInput, 4);
+              chunkView.setUint32(4 + crcInput.length, crc);
+              const result = new Uint8Array(png.length + chunk.length);
+              result.set(png.subarray(0, 33), 0);
+              result.set(chunk, 33);
+              result.set(png.subarray(33), 33 + chunk.length);
+              resolve(result);
+            } catch (error) {
+              reject(error);
+            }
+          }, 'image/png');
+        });
       }
 
       let pendingDownloadUrl = null;
