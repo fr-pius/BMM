@@ -1626,8 +1626,21 @@
           if (!source.complete || !source.naturalWidth) {
             throw new Error('Uma imagem da carta não foi carregada. Confira a moldura e a ilustração.');
           }
-          cloneImages[i].setAttribute('src', await imageToDataUrl(source));
+          // Remove candidatos alternativos de imagem: srcset/currentSrc poderia
+          // fazer o SVG voltar a buscar a imagem remota e contaminar o Canvas.
+          const embeddedImage = await imageToDataUrl(source);
+          cloneImages[i].removeAttribute('srcset');
+          cloneImages[i].removeAttribute('sizes');
+          cloneImages[i].removeAttribute('crossorigin');
+          cloneImages[i].setAttribute('src', embeddedImage);
+          cloneImages[i].src = embeddedImage;
         }
+        // Aguarda a decodificação das cópias já incorporadas em Data URL.
+        await Promise.all(cloneImages.map(img =>
+          img.getAttribute('src') ? img.decode().catch(() => {
+            throw new Error('Não foi possível decodificar uma imagem incorporada à carta.');
+          }) : Promise.resolve()
+        ));
 
         const stylesheet = document.querySelector('style').textContent;
         const markup = new XMLSerializer().serializeToString(printCard);
@@ -1662,10 +1675,18 @@
           ctx.imageSmoothingQuality = 'high';
           ctx.drawImage(image, 0, 0, pixelWidth, pixelHeight);
 
-          const pngBlob = await new Promise((resolve, reject) => {
-            canvas.toBlob(blob => blob ? resolve(blob) :
-              reject(new Error('O navegador não conseguiu gerar o arquivo PNG.')), 'image/png');
-          });
+          let pngBlob;
+          try {
+            pngBlob = await new Promise((resolve, reject) => {
+              canvas.toBlob(blob => blob ? resolve(blob) :
+                reject(new Error('O navegador não conseguiu gerar o arquivo PNG.')), 'image/png');
+            });
+          } catch (error) {
+            if (error && error.name === 'SecurityError') {
+              throw new Error('A composição ainda contém uma imagem externa. Atualize a moldura e a ilustração e tente exportar novamente.');
+            }
+            throw error;
+          }
           const png = new Uint8Array(await pngBlob.arrayBuffer());
 
           // Registra 300 dpi no próprio PNG para conservar o tamanho físico.
