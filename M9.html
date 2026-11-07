@@ -531,6 +531,13 @@
       <p class="hint">
         A cor automática é estimada pelos pixels das bordas da ilustração central. Desmarque a opção acima para escolher uma cor manual.
       </p>
+
+      <div class="export-tools" style="margin-top:30px;padding-top:14px;border-top:1px solid #3b4358">
+        <h2>Exportar imagens</h2>
+        <button id="exportCardPng" type="button" style="width:100%;margin-top:8px">Exportar card selecionado em PNG</button>
+        <button id="exportDeckPng" type="button" style="width:100%;margin-top:8px">Exportar deck em PNG (ZIP)</button>
+        <p class="hint">Os arquivos reproduzem a composição da carta usada na impressão.</p>
+      </div>
     </section>
 
     <section class="preview-area">
@@ -595,8 +602,6 @@
       <div class="actions">
         <button id="loadDeckCard">Abrir para editar</button>
         <button id="deleteDeckCard">Excluir card</button>
-        <button id="exportCardPng" style="grid-column:1 / -1">Exportar card selecionado em PNG</button>
-        <button id="exportDeckPng" style="grid-column:1 / -1">Exportar deck em PNG (ZIP)</button>
       </div>
       <p class="hint">Os decks ficam armazenados localmente neste navegador. Exporte o card selecionado em PNG individual ou o deck inteiro em ZIP. Os PNGs recebem a dimensão física escolhida no gerador.</p>
     </section>
@@ -1566,6 +1571,23 @@
         });
       }
 
+      // Cria a mesma composição de carta usada pela folha de impressão.
+      // Tanto imprimir quanto exportar PNG partem deste mesmo elemento.
+      function createPrintCard() {
+        const wrap = document.createElement('div');
+        wrap.className = 'print-card';
+        const clone = card.cloneNode(true);
+        clone.removeAttribute('id');
+        clone.querySelectorAll('.txt').forEach(el => {
+          el.classList.remove('selected');
+          el.querySelectorAll('.handle').forEach(handle => handle.remove());
+          el.style.setProperty('border-color', 'transparent', 'important');
+          el.style.setProperty('background', 'transparent', 'important');
+        });
+        wrap.appendChild(clone);
+        return wrap;
+      }
+
       async function captureCardPng() {
         await Promise.all([...card.querySelectorAll('img')].map(waitForImage));
         if (document.fonts && document.fonts.ready) await document.fonts.ready;
@@ -1581,35 +1603,34 @@
           throw new Error('A pré-visualização da carta não está pronta. Atualize a carta e tente novamente.');
         }
 
-        // Clona somente a carta, mantendo as dimensões CSS originais.
-        // O SVG amplia essa composição completa até os 300 dpi desejados.
-        const clone = card.cloneNode(true);
-        clone.removeAttribute('id');
-        clone.style.setProperty('width', sourceWidth + 'px', 'important');
-        clone.style.setProperty('height', sourceHeight + 'px', 'important');
+        // Usa a estrutura .print-card > .card que também vai para a impressão.
+        const printCard = createPrintCard();
+        printCard.style.setProperty('width', sourceWidth + 'px', 'important');
+        printCard.style.setProperty('height', sourceHeight + 'px', 'important');
+        printCard.style.setProperty('overflow', 'hidden', 'important');
+        const clone = printCard.querySelector('.card');
+        clone.style.setProperty('width', '100%', 'important');
+        clone.style.setProperty('height', '100%', 'important');
         clone.style.setProperty('box-shadow', 'none', 'important');
-        clone.querySelectorAll('.txt').forEach(el => {
-          el.classList.remove('selected');
-          el.querySelectorAll('.handle').forEach(handle => handle.remove());
-          el.style.setProperty('border', '0', 'important');
-          el.style.setProperty('cursor', 'default', 'important');
-        });
+
+        // Preserva as variáveis de cor calculadas na página original.
+        const rootStyle = getComputedStyle(document.documentElement);
+        clone.style.setProperty('--frame-bg', rootStyle.getPropertyValue('--frame-bg').trim() || 'transparent');
+        clone.style.setProperty('--art-bg', rootStyle.getPropertyValue('--art-bg').trim() || '#30213f');
 
         const sourceImages = [...card.querySelectorAll('img')];
-        const cloneImages = [...clone.querySelectorAll('img')];
+        const cloneImages = [...printCard.querySelectorAll('img')];
         for (let i = 0; i < cloneImages.length; i++) {
           const source = sourceImages[i];
-          if (!source) continue;
-          if (source.getAttribute('src')) {
-            if (!source.complete || !source.naturalWidth) {
-              throw new Error('Uma imagem da carta não foi carregada. Confira a moldura e a ilustração.');
-            }
-            cloneImages[i].setAttribute('src', await imageToDataUrl(source));
+          if (!source || !source.getAttribute('src')) continue;
+          if (!source.complete || !source.naturalWidth) {
+            throw new Error('Uma imagem da carta não foi carregada. Confira a moldura e a ilustração.');
           }
+          cloneImages[i].setAttribute('src', await imageToDataUrl(source));
         }
 
         const stylesheet = document.querySelector('style').textContent;
-        const cloneMarkup = new XMLSerializer().serializeToString(clone);
+        const markup = new XMLSerializer().serializeToString(printCard);
         const svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xhtml="http://www.w3.org/1999/xhtml" width="' +
           pixelWidth + '" height="' + pixelHeight + '" viewBox="0 0 ' +
           sourceWidth + ' ' + sourceHeight + '">' +
@@ -1617,9 +1638,9 @@
           '<xhtml:div xmlns="http://www.w3.org/1999/xhtml" style="width:' +
           sourceWidth + 'px;height:' + sourceHeight + 'px;overflow:hidden;">' +
           '<xhtml:style><![CDATA[' + stylesheet +
-          '\n.card{width:' + sourceWidth + 'px!important;height:' + sourceHeight +
-          'px!important;box-shadow:none!important;}\n.card .txt{border:0!important;}]]></xhtml:style>' +
-          cloneMarkup + '</xhtml:div></foreignObject></svg>';
+          '\\n.print-card{position:relative;width:' + sourceWidth + 'px!important;height:' + sourceHeight +
+          'px!important;overflow:hidden!important;}\\n.print-card .card{width:100%!important;height:100%!important;box-shadow:none!important;}\\n.print-card .txt{border-color:transparent!important;background:transparent!important;}\\n.print-card .handle{display:none!important;}]]></xhtml:style>' +
+          markup + '</xhtml:div></foreignObject></svg>';
 
         const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
         const svgUrl = URL.createObjectURL(svgBlob);
@@ -1627,7 +1648,7 @@
           const image = new Image();
           const loaded = new Promise((resolve, reject) => {
             image.onload = resolve;
-            image.onerror = () => reject(new Error('O navegador não conseguiu capturar a carta. Atualize a pré-visualização e tente novamente.'));
+            image.onerror = () => reject(new Error('O navegador não conseguiu converter a composição de impressão em PNG.'));
           });
           image.src = svgUrl;
           await loaded;
@@ -1647,7 +1668,7 @@
           });
           const png = new Uint8Array(await pngBlob.arrayBuffer());
 
-          // Registra a resolução física em pixels por metro (300 dpi).
+          // Registra 300 dpi no próprio PNG para conservar o tamanho físico.
           const type = new TextEncoder().encode('pHYs');
           const data = new Uint8Array(9);
           const view = new DataView(data.buffer);
@@ -1824,18 +1845,7 @@
         const rows = Math.max(1, Math.floor(27 / (h + 0.5)));
 
         for (let i = 0; i < cols * rows; i++) {
-          const wrap = document.createElement('div');
-          wrap.className = 'print-card';
-
-          const clone = card.cloneNode(true);
-          clone.removeAttribute('id');
-          clone.querySelectorAll('.txt').forEach(el => {
-            el.classList.remove('selected');
-            el.querySelector('.handle')?.remove();
-          });
-
-          wrap.appendChild(clone);
-          sheet.appendChild(wrap);
+          sheet.appendChild(createPrintCard());
         }
       }
 
