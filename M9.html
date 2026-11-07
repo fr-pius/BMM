@@ -1807,6 +1807,7 @@
         }
 
         let original;
+        const selectedExportSize = val('cardSize');
         let resultBlob = null;
         let resultMessage = '';
         let resultFilename = '';
@@ -1819,6 +1820,10 @@
 
           original = getLayout();
           applyLayout(layout);
+          // O tamanho escolhido no menu é uma preferência de exportação:
+          // não deve ser substituído pelo tamanho gravado no card salvo.
+          $('cardSize').value = selectedExportSize;
+          syncSize();
           await refreshCardView('');
           const png = await captureCardPng();
           resultBlob = new Blob([png], { type: 'image/png' });
@@ -1847,6 +1852,7 @@
           return;
         }
         let original;
+        const selectedExportSize = val('cardSize');
         let resultBlob = null;
         let resultFilename = '';
         let resultMessage = '';
@@ -1863,6 +1869,9 @@
             showDownloadMessage(progress);
             $('status').textContent = progress;
             applyLayout(deck.cards[names[i]]);
+            // Aplica a mesma dimensão selecionada pelo usuário a todos os cards do ZIP.
+            $('cardSize').value = selectedExportSize;
+            syncSize();
             await refreshCardView('');
             const png = await captureCardPng();
             files.push({ name: safeName(deckName) + '/' + safeName(names[i]) + '.png', data: png });
