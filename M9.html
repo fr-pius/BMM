@@ -371,8 +371,9 @@
     }
 
     .download-area {
-      grid-column: 1 / -1;
-      margin-top: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 12px;
       padding: 12px;
       border: 1px solid #47765f;
       border-radius: 9px;
@@ -604,6 +605,7 @@
         <button id="deleteDeckCard">Excluir card</button>
       </div>
       <p class="hint">Os decks ficam armazenados localmente neste navegador. Exporte o card selecionado em PNG individual ou o deck inteiro em ZIP. Os PNGs recebem a dimensão física escolhida no gerador.</p>
+      <div id="downloadArea" class="download-area" hidden aria-live="polite"></div>
     </section>
 
     <section class="panel panel-bottom">
@@ -624,7 +626,6 @@
       <p id="status" class="hint" aria-live="polite">
         Arranjo padrão carregado. O salvamento local fica neste navegador.
       </p>
-      <div id="downloadArea" class="download-area" hidden aria-live="polite"></div>
       <p class="hint">
         Para usar o arranjo em outro navegador ou computador, exporte o JSON
         e depois importe-o no outro dispositivo. Para imprimir, escolha A4,
