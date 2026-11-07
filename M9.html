@@ -1748,11 +1748,13 @@
           ctx.textBaseline = 'middle';
           const shadow = style.textShadow;
           if (shadow && shadow !== 'none') {
-            const parts = shadow.match(/(-?[\\d.]+)px/g) || [];
-            ctx.shadowColor = shadow.slice(shadow.lastIndexOf(' ') + 1);
-            ctx.shadowOffsetX = parts[0] ? parseFloat(parts[0]) : 0;
-            ctx.shadowOffsetY = parts[1] ? parseFloat(parts[1]) : 0;
-            ctx.shadowBlur = parts[2] ? parseFloat(parts[2]) : 0;
+            const match = shadow.match(/^(.*?)\\s(-?[\\d.]+)px\\s(-?[\\d.]+)px(?:\\s(-?[\\d.]+)px)?$/);
+            if (match) {
+              ctx.shadowColor = match[1];
+              ctx.shadowOffsetX = parseFloat(match[2]) || 0;
+              ctx.shadowOffsetY = parseFloat(match[3]) || 0;
+              ctx.shadowBlur = parseFloat(match[4]) || 0;
+            }
           }
           const lineHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.1;
           const paragraphs = value.split('\\n');
