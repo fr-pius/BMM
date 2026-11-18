@@ -538,7 +538,7 @@
         <h2>Exportar imagens</h2>
         <button id="exportCardPng" type="button" style="width:100%;margin-top:8px">Exportar card selecionado em PNG</button>
         <button id="exportDeckPng" type="button" style="width:100%;margin-top:8px">Exportar backup completo do deck (ZIP)</button>
-        <p class="hint">O backup inclui PNG final, metadados, projeto editável e imagens originais de cada carta.</p>
+        <p class="hint">O backup inclui PNG final, projeto editável e imagens originais de cada carta.</p>
       </div>
     </section>
 
@@ -606,7 +606,7 @@
         <button id="loadDeckCard">Abrir para editar</button>
         <button id="deleteDeckCard">Excluir card</button>
       </div>
-      <p class="hint">Os decks ficam armazenados localmente neste navegador. Exporte uma carta em PNG ou gere um backup completo do deck, com imagens, metadados e projetos editáveis.</p>
+      <p class="hint">Os decks ficam armazenados localmente neste navegador. Exporte uma carta em PNG ou gere um backup completo do deck, com imagens e projetos editáveis.</p>
       <div id="downloadArea" class="download-area" hidden aria-live="polite"></div>
     </section>
 
@@ -1864,59 +1864,54 @@
         });
       }
 
-      // O projeto JSON permanece autocontido (com data URLs), para que possa
-      // ser reaberto no editor. Cópias binárias dos originais também ficam em recursos/.
-      async function appendProjectResource(files, project, field, path, folder, baseName) {
-        let source = project[field] || '';
+      // Os recursos binários são guardados uma única vez em recursos/.
+      // O projeto JSON contém somente os caminhos relativos, nunca Base64 das imagens.
+      async function appendProjectResource(files, source, path, folder, baseName) {
         if (!source && path) source = await fetchImageAsDataUrl(path);
         if (!source) return null;
-        if (!source.startsWith('data:')) {
-          source = await fetchImageAsDataUrl(source);
-        }
-        project[field] = source;
+        if (!source.startsWith('data:')) source = await fetchImageAsDataUrl(source);
         const mime = (source.match(/^data:([^;,]+)/i) || [])[1] || '';
         const extension = extensionForMime(mime);
-        const filename = folder + 'recursos/' + baseName + '.' + extension;
-        files.push({ name: filename, data: dataUrlBytes(source) });
-        return filename;
+        const relativePath = 'recursos/' + baseName + '.' + extension;
+        files.push({ name: folder + relativePath, data: dataUrlBytes(source) });
+        return relativePath;
       }
 
       async function buildCardBackupFiles(files, deckFolder, cardName, layout, exportSize, position) {
         const folder = deckFolder + 'cartas/' + safeName(cardName) + '/';
         const project = JSON.parse(JSON.stringify(layout));
         project.name = cardName;
-        const resources = [];
-        const frameResource = await appendProjectResource(
-          files, project, 'frameData', project.framePath, folder, 'moldura'
-        );
-        if (frameResource) resources.push(frameResource);
-        const artResource = await appendProjectResource(
-          files, project, 'artData', '', folder, 'ilustracao'
-        );
-        if (artResource) resources.push(artResource);
 
-        const metadata = {
-          formato: 'BMM-sticker-backup',
+        const frameResource = await appendProjectResource(
+          files, project.frameData || '', project.framePath || '', folder, 'moldura'
+        );
+        const artResource = await appendProjectResource(
+          files, project.artData || '', '', folder, 'ilustracao'
+        );
+
+        // Dados catalográficos e informações do backup ficam no próprio projeto.
+        project.backup = {
+          formato: 'BMM-card-backup',
           versao: 1,
           id: safeName(deckFolder + cardName),
           nome: cardName,
           deck: deckFolder.replace(/\/$/, '').split('/').pop(),
-          numero: layout.fields?.number || '',
-          categoria: layout.fields?.kind || '',
-          titulo: layout.fields?.title || cardName,
-          descricao: layout.fields?.description || '',
-          data_recebimento: layout.fields?.date || '',
-          destinatario: layout.fields?.child || '',
           dimensao_exportada_cm: {
             largura: Number(exportSize),
             altura: Number(exportSize) * 1.4
           },
           resolucao_png_dpi: 300,
-          projeto_original_cardSize_cm: Number(layout.cardSize) || null,
-          recursos: resources.map(path => path.split('/').slice(-2).join('/')),
           salvo_em: layout.savedAt || null,
           exportado_em: new Date().toISOString()
         };
+        project.resources = {
+          frame: frameResource,
+          illustration: artResource
+        };
+        // Impede duplicação de imagens em Base64 dentro do JSON.
+        delete project.frameData;
+        delete project.artData;
+        delete project.framePath;
 
         const original = getLayout();
         try {
@@ -1932,14 +1927,15 @@
         }
 
         files.push({
-          name: folder + 'metadados.json',
-          data: new TextEncoder().encode(JSON.stringify(metadata, null, 2))
-        });
-        files.push({
           name: folder + 'projeto.json',
           data: new TextEncoder().encode(JSON.stringify(project, null, 2))
         });
-        return metadata;
+
+        return {
+          numero: layout.fields?.number || '',
+          titulo: layout.fields?.title || cardName,
+          recursos: [frameResource, artResource].filter(Boolean)
+        };
       }
 
       $('exportCardPng').onclick = async () => {
@@ -2024,8 +2020,7 @@
               nome: names[i],
               numero: metadata.numero,
               titulo: metadata.titulo,
-              arquivos: ['figurinha.png', 'metadados.json', 'projeto.json',
-                ...(metadata.recursos || []).map(path => 'recursos/' + path.split('/').pop())]
+              arquivos: ['figurinha.png', 'projeto.json', ...(metadata.recursos || [])]
             });
           }
 
@@ -2066,7 +2061,7 @@
           resultBlob = makeZip(files);
           resultFilename = safeName(deckName) + '_backup_BMM.zip';
           resultMessage = 'Backup completo preparado: ' + names.length +
-            ' figurinha(s), com PNG final, metadados, projeto editável e recursos originais. Os PNGs conservam ' +
+            ' figurinha(s), com PNG final, projeto editável e recursos originais. Os PNGs conservam ' +
             selectedExportSize + ' × ' + (Number(selectedExportSize) * 1.4).toFixed(2) + ' cm a 300 dpi.';
         } catch (error) {
           showDownloadMessage('Não foi possível preparar o backup: ' + (error?.message || 'erro desconhecido.'), true);
