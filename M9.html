@@ -2049,10 +2049,10 @@
             name: deckFolder + 'LEIA-ME.txt',
             data: new TextEncoder().encode(
               'BACKUP BMM — ' + (deck.name || deckName) + '\n\n' +
-              'Cada pasta em cartas/ contém figurinha.png (imagem final), metadados.json ' +
-              '(catalogação) e projeto.json (composição editável). A pasta recursos/ contém ' +
-              'cópias das imagens originais utilizadas. O projeto.json mantém também as imagens ' +
-              'incorporadas em formato autocontido. indice.json cataloga o deck.\n\n' +
+              'Cada pasta em cartas/ contém figurinha.png (imagem final), projeto.json ' +
+              '(identificação, dados catalográficos e composição editável) e recursos/ ' +
+              '(imagens originais, quando existentes). O projeto.json aponta para os recursos ' +
+              'por caminhos relativos e não duplica as imagens em Base64. indice.json cataloga o deck.\n\n' +
               'Os PNGs foram exportados em ' + selectedExportSize + ' × ' +
               (Number(selectedExportSize) * 1.4).toFixed(2) + ' cm, a 300 dpi.\n'
             )
