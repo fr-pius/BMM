@@ -537,8 +537,8 @@
       <div class="export-tools" style="margin-top:30px;padding-top:14px;border-top:1px solid #3b4358">
         <h2>Exportar imagens</h2>
         <button id="exportCardPng" type="button" style="width:100%;margin-top:8px">Exportar card selecionado em PNG</button>
-        <button id="exportDeckPng" type="button" style="width:100%;margin-top:8px">Exportar deck em PNG (ZIP)</button>
-        <p class="hint">Os arquivos reproduzem a composição da carta usada na impressão.</p>
+        <button id="exportDeckPng" type="button" style="width:100%;margin-top:8px">Exportar backup completo do deck (ZIP)</button>
+        <p class="hint">O backup inclui PNG final, metadados, projeto editável e imagens originais de cada carta.</p>
       </div>
     </section>
 
@@ -606,7 +606,7 @@
         <button id="loadDeckCard">Abrir para editar</button>
         <button id="deleteDeckCard">Excluir card</button>
       </div>
-      <p class="hint">Os decks ficam armazenados localmente neste navegador. Exporte o card selecionado em PNG individual ou o deck inteiro em ZIP. Os PNGs recebem a dimensão física escolhida no gerador.</p>
+      <p class="hint">Os decks ficam armazenados localmente neste navegador. Exporte uma carta em PNG ou gere um backup completo do deck, com imagens, metadados e projetos editáveis.</p>
       <div id="downloadArea" class="download-area" hidden aria-live="polite"></div>
     </section>
 
@@ -1778,26 +1778,170 @@
         }
         return (crc ^ -1) >>> 0;
       }
+      // Gera um ZIP sem compressão, montando os blocos em buffers
+      // para evitar espalhar arquivos grandes em arrays de argumentos.
       function makeZip(files) {
         const encoder = new TextEncoder();
-        const localParts = [], centralParts = [];
+        const localParts = [];
+        const centralParts = [];
         let offset = 0;
-        const u16 = n => [n & 255, (n >>> 8) & 255];
-        const u32 = n => [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255];
+        const u16 = (view, pos, value) => view.setUint16(pos, value, true);
+        const u32 = (view, pos, value) => view.setUint32(pos, value >>> 0, true);
+        if (files.length > 65535) throw new Error('O backup contém arquivos demais para o formato ZIP clássico.');
         for (const file of files) {
           const name = encoder.encode(file.name);
-          const data = file.data || new Uint8Array(0);
+          const data = file.data instanceof Uint8Array ? file.data : new Uint8Array(file.data || 0);
+          if (data.length > 0xFFFFFFFF || offset > 0xFFFFFFFF) {
+            throw new Error('O backup ultrapassa o limite de 4 GB do formato ZIP clássico.');
+          }
           const crc = crc32(data);
-          const local = new Uint8Array([...u32(0x04034b50), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(name.length), ...u16(0), ...name, ...data]);
+          const local = new Uint8Array(30 + name.length + data.length);
+          const lv = new DataView(local.buffer);
+          u32(lv, 0, 0x04034b50); u16(lv, 4, 20); u16(lv, 6, 0x0800);
+          u16(lv, 8, 0); u16(lv, 10, 0); u16(lv, 12, 0);
+          u32(lv, 14, crc); u32(lv, 18, data.length); u32(lv, 22, data.length);
+          u16(lv, 26, name.length); u16(lv, 28, 0);
+          local.set(name, 30); local.set(data, 30 + name.length);
           localParts.push(local);
-          const central = new Uint8Array([...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(name.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(offset), ...name]);
+
+          const central = new Uint8Array(46 + name.length);
+          const cv = new DataView(central.buffer);
+          u32(cv, 0, 0x02014b50); u16(cv, 4, 20); u16(cv, 6, 20);
+          u16(cv, 8, 0x0800); u16(cv, 10, 0); u16(cv, 12, 0); u16(cv, 14, 0);
+          u32(cv, 16, crc); u32(cv, 20, data.length); u32(cv, 24, data.length);
+          u16(cv, 28, name.length); u16(cv, 30, 0); u16(cv, 32, 0);
+          u16(cv, 34, 0); u16(cv, 36, 0); u32(cv, 38, 0); u32(cv, 42, offset);
+          central.set(name, 46);
           centralParts.push(central);
           offset += local.length;
         }
         const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
-        const end = new Uint8Array([...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(files.length), ...u16(files.length), ...u32(centralSize), ...u32(offset), ...u16(0)]);
+        if (offset + centralSize > 0xFFFFFFFF) {
+          throw new Error('O backup ultrapassa o limite de 4 GB do formato ZIP clássico.');
+        }
+        const end = new Uint8Array(22);
+        const ev = new DataView(end.buffer);
+        u32(ev, 0, 0x06054b50); u16(ev, 4, 0); u16(ev, 6, 0);
+        u16(ev, 8, files.length); u16(ev, 10, files.length);
+        u32(ev, 12, centralSize); u32(ev, 16, offset); u16(ev, 20, 0);
         return new Blob([...localParts, ...centralParts, end], { type: 'application/zip' });
       }
+
+      function dataUrlBytes(dataUrl) {
+        const comma = dataUrl.indexOf(',');
+        if (comma < 0) throw new Error('Uma imagem incorporada possui formato inválido.');
+        const header = dataUrl.slice(0, comma);
+        const payload = dataUrl.slice(comma + 1);
+        if (/;base64/i.test(header)) {
+          const binary = atob(payload);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          return bytes;
+        }
+        return new TextEncoder().encode(decodeURIComponent(payload));
+      }
+
+      function extensionForMime(mime) {
+        const type = String(mime || '').toLowerCase().split(';')[0];
+        return ({ 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp',
+          'image/gif': 'gif', 'image/svg+xml': 'svg', 'image/avif': 'avif' })[type] || 'bin';
+      }
+
+      async function fetchImageAsDataUrl(source) {
+        if (!source) return '';
+        if (source.startsWith('data:')) return source;
+        const absolute = new URL(source, location.href).href;
+        const response = await fetch(absolute, { mode: 'cors', credentials: 'omit' });
+        if (!response.ok) {
+          throw new Error('Não foi possível incluir um recurso original no backup (HTTP ' + response.status + '): ' + source);
+        }
+        const blob = await response.blob();
+        return await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error('Falha ao preparar um recurso original do projeto.'));
+          reader.readAsDataURL(blob);
+        });
+      }
+
+      // O projeto JSON permanece autocontido (com data URLs), para que possa
+      // ser reaberto no editor. Cópias binárias dos originais também ficam em recursos/.
+      async function appendProjectResource(files, project, field, path, folder, baseName) {
+        let source = project[field] || '';
+        if (!source && path) source = await fetchImageAsDataUrl(path);
+        if (!source) return null;
+        if (!source.startsWith('data:')) {
+          source = await fetchImageAsDataUrl(source);
+        }
+        project[field] = source;
+        const mime = (source.match(/^data:([^;,]+)/i) || [])[1] || '';
+        const extension = extensionForMime(mime);
+        const filename = folder + 'recursos/' + baseName + '.' + extension;
+        files.push({ name: filename, data: dataUrlBytes(source) });
+        return filename;
+      }
+
+      async function buildCardBackupFiles(files, deckFolder, cardName, layout, exportSize, position) {
+        const folder = deckFolder + 'cartas/' + safeName(cardName) + '/';
+        const project = JSON.parse(JSON.stringify(layout));
+        project.name = cardName;
+        const resources = [];
+        const frameResource = await appendProjectResource(
+          files, project, 'frameData', project.framePath, folder, 'moldura'
+        );
+        if (frameResource) resources.push(frameResource);
+        const artResource = await appendProjectResource(
+          files, project, 'artData', '', folder, 'ilustracao'
+        );
+        if (artResource) resources.push(artResource);
+
+        const metadata = {
+          formato: 'BMM-sticker-backup',
+          versao: 1,
+          id: safeName(deckFolder + cardName),
+          nome: cardName,
+          deck: deckFolder.replace(/\/$/, '').split('/').pop(),
+          numero: layout.fields?.number || '',
+          categoria: layout.fields?.kind || '',
+          titulo: layout.fields?.title || cardName,
+          descricao: layout.fields?.description || '',
+          data_recebimento: layout.fields?.date || '',
+          destinatario: layout.fields?.child || '',
+          dimensao_exportada_cm: {
+            largura: Number(exportSize),
+            altura: Number(exportSize) * 1.4
+          },
+          resolucao_png_dpi: 300,
+          projeto_original_cardSize_cm: Number(layout.cardSize) || null,
+          recursos: resources.map(path => path.split('/').slice(-2).join('/')),
+          salvo_em: layout.savedAt || null,
+          exportado_em: new Date().toISOString()
+        };
+
+        const original = getLayout();
+        try {
+          applyLayout(layout);
+          $('cardSize').value = exportSize;
+          syncSize();
+          await refreshCardView('');
+          const png = await captureCardPng();
+          files.push({ name: folder + 'figurinha.png', data: png });
+        } finally {
+          applyLayout(original);
+          await refreshCardView('');
+        }
+
+        files.push({
+          name: folder + 'metadados.json',
+          data: new TextEncoder().encode(JSON.stringify(metadata, null, 2))
+        });
+        files.push({
+          name: folder + 'projeto.json',
+          data: new TextEncoder().encode(JSON.stringify(project, null, 2))
+        });
+        return metadata;
+      }
+
       $('exportCardPng').onclick = async () => {
         const deckName = $('deckSelect').value;
         const cardName = $('deckCardSelect').value;
@@ -1853,40 +1997,83 @@
           return;
         }
         let original;
-        const selectedExportSize = val('cardSize');
         let resultBlob = null;
         let resultFilename = '';
         let resultMessage = '';
+        const selectedExportSize = val('cardSize');
         try {
-          showDownloadMessage('Preparando a exportação do deck “' + deckName + '”…');
+          showDownloadMessage('Preparando o backup completo do deck “' + deckName + '”…');
+          $('status').textContent = 'Lendo os cards salvos…';
           const deck = await getDeck(deckName);
           const names = Object.keys(deck?.cards || {}).sort((a,b) => a.localeCompare(b, 'pt-BR'));
           if (!names.length) throw new Error('Este deck não contém cards.');
 
           original = getLayout();
-          const files = [{ name: safeName(deckName) + '/', data: new Uint8Array(0) }];
+          const deckFolder = safeName(deckName) + '/';
+          const files = [];
+          const cardIndex = [];
           for (let i = 0; i < names.length; i++) {
-            const progress = 'Exportando PNG ' + (i + 1) + ' de ' + names.length + '…';
+            const progress = 'Preparando backup: carta ' + (i + 1) + ' de ' + names.length + '…';
             showDownloadMessage(progress);
             $('status').textContent = progress;
-            applyLayout(deck.cards[names[i]]);
-            // Aplica a mesma dimensão selecionada pelo usuário a todos os cards do ZIP.
-            $('cardSize').value = selectedExportSize;
-            syncSize();
-            await refreshCardView('');
-            const png = await captureCardPng();
-            files.push({ name: safeName(deckName) + '/' + safeName(names[i]) + '.png', data: png });
+            const metadata = await buildCardBackupFiles(
+              files, deckFolder, names[i], deck.cards[names[i]], selectedExportSize, i + 1
+            );
+            cardIndex.push({
+              pasta: 'cartas/' + safeName(names[i]) + '/',
+              nome: names[i],
+              numero: metadata.numero,
+              titulo: metadata.titulo,
+              arquivos: ['figurinha.png', 'metadados.json', 'projeto.json',
+                ...(metadata.recursos || []).map(path => 'recursos/' + path.split('/').pop())]
+            });
           }
+
+          const deckIndex = {
+            formato: 'BMM-deck-backup',
+            versao: 1,
+            deck: {
+              nome: deck.name || deckName,
+              criado_em: deck.createdAt || null,
+              atualizado_em: deck.updatedAt || null,
+              exportado_em: new Date().toISOString(),
+              quantidade_figurinhas: names.length,
+              dimensao_png_cm: {
+                largura: Number(selectedExportSize),
+                altura: Number(selectedExportSize) * 1.4
+              },
+              resolucao_png_dpi: 300
+            },
+            figurinhas: cardIndex
+          };
+          files.push({
+            name: deckFolder + 'indice.json',
+            data: new TextEncoder().encode(JSON.stringify(deckIndex, null, 2))
+          });
+          files.push({
+            name: deckFolder + 'LEIA-ME.txt',
+            data: new TextEncoder().encode(
+              'BACKUP BMM — ' + (deck.name || deckName) + '\n\n' +
+              'Cada pasta em cartas/ contém figurinha.png (imagem final), metadados.json ' +
+              '(catalogação) e projeto.json (composição editável). A pasta recursos/ contém ' +
+              'cópias das imagens originais utilizadas. O projeto.json mantém também as imagens ' +
+              'incorporadas em formato autocontido. indice.json cataloga o deck.\n\n' +
+              'Os PNGs foram exportados em ' + selectedExportSize + ' × ' +
+              (Number(selectedExportSize) * 1.4).toFixed(2) + ' cm, a 300 dpi.\n'
+            )
+          });
+
           resultBlob = makeZip(files);
-          resultFilename = safeName(deckName) + '_PNGs.zip';
-          resultMessage = 'ZIP preparado com ' + names.length +
-            ' PNG(s). Cada arquivo conserva a dimensão física escolhida no gerador.';
+          resultFilename = safeName(deckName) + '_backup_BMM.zip';
+          resultMessage = 'Backup completo preparado: ' + names.length +
+            ' figurinha(s), com PNG final, metadados, projeto editável e recursos originais. Os PNGs conservam ' +
+            selectedExportSize + ' × ' + (Number(selectedExportSize) * 1.4).toFixed(2) + ' cm a 300 dpi.';
         } catch (error) {
-          showDownloadMessage('Não foi possível exportar o deck: ' + (error?.message || 'erro desconhecido.'), true);
+          showDownloadMessage('Não foi possível preparar o backup: ' + (error?.message || 'erro desconhecido.'), true);
           showDeckError(error);
         } finally {
           if (original) {
-            try { applyLayout(original); } catch (_) {}
+            try { applyLayout(original); await refreshCardView(''); } catch (_) {}
           }
         }
         if (resultBlob) {
