@@ -291,6 +291,7 @@
 
       function montarCarta(layout, nome, ampliada = false) {
         const card = elemento('div', ampliada ? 'modal-card' : 'mini-card');
+        if (ampliada) card.id = 'modalCard';
         card.style.setProperty('--art-bg', layout.artBg || '#30213f');
 
         const janela = elemento('div', 'art-window');
