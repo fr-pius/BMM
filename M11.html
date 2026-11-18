@@ -107,6 +107,26 @@ function validRange(){
  if(!start||!end)return false;
  return end.page>start.page||(end.page===start.page&&end.y>start.y+0.002);
 }
+function findInkBounds(canvas){
+ const ctx=canvas.getContext("2d",{willReadFrequently:true});
+ const {data}=ctx.getImageData(0,0,canvas.width,canvas.height);
+ const threshold=Math.max(2,Math.floor(canvas.width*0.001));
+ const hasInk=y=>{
+  let count=0, row=y*canvas.width*4;
+  for(let x=0;x<canvas.width;x++){
+   const i=row+x*4;
+   if(data[i]<242||data[i+1]<242||data[i+2]<242){
+    if(++count>=threshold)return true;
+   }
+  }
+  return false;
+ };
+ let first=0,last=canvas.height-1;
+ while(first<canvas.height&&!hasInk(first))first++;
+ while(last>=0&&!hasInk(last))last--;
+ if(first>=canvas.height||last<first)return {top:0,bottom:canvas.height};
+ return {top:first,bottom:last+1};
+}
 function setMode(m){
  mode=m;$("startMode").classList.toggle("active",m==="start");$("endMode").classList.toggle("active",m==="end");
  $("instruction").textContent=m==="start"?"Toque na página e na altura em que o trecho deve começar.":"Toque na página e na altura em que o trecho deve terminar.";
@@ -167,6 +187,14 @@ $("export").addEventListener("click",async()=>{
    let top=n===firstPage?Math.round(start.y*canvas.height):0;
    let bottom=n===lastPage?Math.round(end.y*canvas.height):canvas.height;
    top=Math.max(0,Math.min(canvas.height,top));bottom=Math.max(0,Math.min(canvas.height,bottom));
+   // Nas junções, elimina apenas as margens vazias das páginas originais.
+   // Mantém 2 mm de respiro de cada lado, sem alterar os espaços internos.
+   if(n>firstPage||n<lastPage){
+    const ink=findInkBounds(canvas);
+    const padPx=Math.round(canvas.width*2/CONTENT_W);
+    if(n>firstPage)top=Math.max(top,ink.top-padPx);
+    if(n<lastPage)bottom=Math.min(bottom,ink.bottom+padPx);
+   }
    if(bottom<=top)throw new Error("O intervalo selecionado não contém conteúdo.");
    const sourceHeight=bottom-top;
    const mmPerPixel=CONTENT_W/canvas.width;
