@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF Trechos</title>
+<style>
+:root{color-scheme:light;--bg:#f4f6f5;--panel:#fff;--ink:#18221d;--muted:#64736b;--line:#d9e1dc;--accent:#18794e;--accent2:#dff3e8;--danger:#a33b32}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:#173d2c;color:#fff;padding:22px max(18px,calc((100% - 1120px)/2))}
+header h1{margin:0;font-size:1.55rem} header p{margin:5px 0 0;color:#d7e8de}
+main{max-width:1120px;margin:22px auto;padding:0 16px 50px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:17px;margin-bottom:16px;box-shadow:0 2px 10px #10251a08}
+.toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+button,.file-label{border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 14px;border-radius:9px;font:inherit;cursor:pointer}
+button.primary,.file-label.primary{background:var(--accent);border-color:var(--accent);color:white}
+button.active{outline:3px solid var(--accent2);border-color:var(--accent);background:var(--accent2)}
+button:disabled{opacity:.45;cursor:not-allowed}
+input[type=file]{display:none}
+.status{color:var(--muted);font-size:.92rem;margin-top:10px}
+.help{color:var(--muted);font-size:.92rem;margin:8px 0 0}
+.selection{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+.pill{background:#f0f5f1;border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:.9rem}
+.pill b{color:var(--accent)}
+.pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:15px}
+.page-card{border:1px solid var(--line);border-radius:11px;padding:10px;background:#fbfcfb}
+.page-title{font-size:.85rem;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
+.preview-wrap{position:relative;width:100%;background:#e9eeea;line-height:0;cursor:crosshair;touch-action:pan-y;overflow:hidden;border:1px solid #d6ddd8}
+.preview-wrap canvas{display:block;width:100%;height:auto}
+.marker{position:absolute;left:0;right:0;height:0;border-top:3px solid;pointer-events:none}
+.marker span{position:absolute;top:3px;left:4px;padding:2px 6px;border-radius:4px;color:#fff;font-size:10px;line-height:1.3}
+.marker.start{border-color:#16834f}.marker.start span{background:#16834f}
+.marker.end{border-color:#c17b13}.marker.end span{background:#a86a0c}
+.page-card.outside{opacity:.48}
+.page-card.between{border-color:#9bc9ad}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.86rem;color:var(--muted);margin-top:12px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+#progress{height:8px;background:#e7eee9;border-radius:10px;overflow:hidden;margin-top:12px;display:none}
+#progress>div{height:100%;width:0;background:var(--accent);transition:width .15s}
+.note{background:#fff8e8;border:1px solid #f0dfb5;border-radius:10px;padding:12px;font-size:.9rem;color:#624b1d}
+footer{color:var(--muted);font-size:.83rem;text-align:center;padding:8px}
+@media(max-width:560px){header{padding:18px}main{margin-top:12px}.panel{padding:13px}.pages{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.page-card{padding:7px}}
+</style>
+</head>
+<body>
+<header><h1>PDF Trechos</h1><p>Selecione um intervalo contínuo e reorganize-o em páginas A4.</p></header>
+<main>
+<section class="panel">
+  <div class="toolbar">
+    <label class="file-label primary" for="file">Abrir PDF</label>
+    <input id="file" type="file" accept="application/pdf,.pdf">
+    <button id="startMode" disabled>Marcar início</button>
+    <button id="endMode" disabled>Marcar fim</button>
+    <button id="reset" disabled>Redefinir seleção</button>
+    <button id="export" class="primary" disabled>Gerar novo PDF</button>
+  </div>
+  <div id="fileStatus" class="status">Abra um arquivo PDF para começar. O arquivo será processado localmente no seu navegador.</div>
+  <div class="selection">
+    <div class="pill">Início: <b id="startLabel">primeira página</b></div>
+    <div class="pill">Fim: <b id="endLabel">última página</b></div>
+  </div>
+  <p class="help" id="instruction">Depois de abrir o arquivo, escolha “Marcar início” ou “Marcar fim” e toque/click na altura desejada da página correspondente.</p>
+  <div id="progress"><div id="progressBar"></div></div>
+  <div id="workStatus" class="status" aria-live="polite"></div>
+</section>
+<section class="panel">
+  <h2 style="font-size:1.08rem;margin:0 0 5px">Páginas do documento</h2>
+  <p class="help">A linha verde indica o começo; a linha dourada indica o término. Toque em qualquer ponto da miniatura para posicionar o marcador ativo.</p>
+  <div class="legend"><span><i class="dot" style="background:#16834f"></i>Início</span><span><i class="dot" style="background:#c17b13"></i>Fim</span><span>O trecho entre os marcadores será mantido.</span></div>
+  <div id="pages" class="pages" style="margin-top:15px"></div>
+</section>
+<div class="note"><b>Observação sobre a primeira versão:</b> para preservar a aparência e permitir recortar qualquer região, o PDF gerado transforma as páginas em imagens de alta resolução. O texto do arquivo final não será selecionável nem pesquisável. O arquivo original não é alterado.</div>
+<footer>PDF Trechos · processamento local no navegador</footer>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const fileInput=$("file"), pagesEl=$("pages"), statusEl=$("fileStatus"), workStatus=$("workStatus");
+let pdf=null, fileName="documento", pageViews=[], mode=null;
+let start={page:1,y:0}, end=null;
+const A4W=210, A4H=297, MARGIN=10, CONTENT_W=A4W-2*MARGIN, CONTENT_H=A4H-2*MARGIN;
+if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}
+function setProgress(p,show=true){$("progress").style.display=show?"block":"none";$("progressBar").style.width=Math.max(0,Math.min(100,p))+"%";}
+function updateSelection(){
+  $("startLabel").textContent=start?\x60pág. ${start.page} · ${Math.round(start.y*100)}%\x60:"não definido";
+  $("endLabel").textContent=end?\x60pág. ${end.page} · ${Math.round(end.y*100)}%\x60:"última página";
+  document.querySelectorAll(".page-card").forEach(card=>{
+    const n=Number(card.dataset.page);card.classList.toggle("outside",!!(start&&n<start.page)||!!(end&&n>end.page));
+    card.classList.toggle("between",!!start&&!!end&&n>=start.page&&n<=end.page);
+  });
+  pageViews.forEach(v=>{
+    v.markers.innerHTML="";
+    if(start&&start.page===v.num)addMarker(v.markers,start.y,"start","INÍCIO");
+    if(end&&end.page===v.num)addMarker(v.markers,end.y,"end","FIM");
+  });
+  $("export").disabled=!pdf||!start||!end||!validRange();
+}
+function addMarker(parent,y,cls,label){
+ const line=document.createElement("div");line.className="marker "+cls;line.style.top=(y*100)+"%";
+ const tag=document.createElement("span");tag.textContent=label;line.appendChild(tag);parent.appendChild(line);
+}
+function validRange(){
+ if(!start||!end)return false;
+ return end.page>start.page||(end.page===start.page&&end.y>start.y+0.002);
+}
+function setMode(m){
+ mode=m;$("startMode").classList.toggle("active",m==="start");$("endMode").classList.toggle("active",m==="end");
+ $("instruction").textContent=m==="start"?"Toque na página e na altura em que o trecho deve começar.":"Toque na página e na altura em que o trecho deve terminar.";
+}
+$("startMode").addEventListener("click",()=>setMode(mode==="start"?null:"start"));
+$("endMode").addEventListener("click",()=>setMode(mode==="end"?null:"end"));
+$("reset").addEventListener("click",()=>{start={page:1,y:0};end={page:pdf.numPages,y:1};setMode(null);updateSelection();});
+fileInput.addEventListener("change",async e=>{
+ const file=e.target.files[0];if(!file)return;
+ if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf")){statusEl.textContent="Selecione um arquivo PDF.";return;}
+ try{
+  statusEl.textContent="Abrindo documento…";workStatus.textContent="";pagesEl.innerHTML="";pageViews=[];setProgress(0,false);
+  fileName=file.name.replace(/\.pdf$/i,"")||"documento";
+  const bytes=await file.arrayBuffer();
+  pdf=await pdfjsLib.getDocument({data:bytes}).promise;
+  start={page:1,y:0};end={page:pdf.numPages,y:1};
+  $("startMode").disabled=$("endMode").disabled=$("reset").disabled=false;
+  statusEl.textContent=\x60${file.name} · ${pdf.numPages} página(s)\x60;
+  for(let n=1;n<=pdf.numPages;n++){
+   const page=await pdf.getPage(n);
+   const base=page.getViewport({scale:1});
+   const scale=Math.min(0.48,260/base.width);
+   const viewport=page.getViewport({scale});
+   const canvas=document.createElement("canvas");canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
+   await page.render({canvasContext:canvas.getContext("2d"),viewport}).promise;
+   const card=document.createElement("div");card.className="page-card";card.dataset.page=n;
+   const title=document.createElement("div");title.className="page-title";title.innerHTML=\x60<span>Página ${n}</span><span>${Math.round(base.width)} × ${Math.round(base.height)}</span>\x60;
+   const wrap=document.createElement("div");wrap.className="preview-wrap";wrap.appendChild(canvas);
+   const markers=document.createElement("div");markers.style.cssText="position:absolute;inset:0;pointer-events:none";wrap.appendChild(markers);
+   wrap.addEventListener("click",ev=>{
+    if(!mode)return;
+    const r=wrap.getBoundingClientRect();const y=Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height));
+    if(mode==="start")start={page:n,y};else end={page:n,y};
+    setMode(null);updateSelection();
+   });
+   card.append(title,wrap);pagesEl.appendChild(card);pageViews.push({num:n,page,canvas,markers,base});
+  }
+  updateSelection();$("instruction").textContent="Selecione os marcadores de início e fim. Por padrão, o documento inteiro está selecionado.";
+ }catch(err){console.error(err);statusEl.textContent="Não foi possível abrir o PDF: "+err.message;pdf=null;}
+});
+$("export").addEventListener("click",async()=>{
+ if(!pdf||!validRange())return;
+ $("export").disabled=true;setProgress(0);workStatus.textContent="Preparando páginas em alta resolução…";
+ try{
+  const {jsPDF}=window.jspdf;
+  const out=new jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true});
+  let currentY=MARGIN;
+  const firstPage=start.page,lastPage=end.page;
+  for(let n=firstPage;n<=lastPage;n++){
+   workStatus.textContent=\x60Processando página ${n} de ${lastPage}…\x60;
+   const page=pageViews[n-1].page;
+   const base=page.getViewport({scale:1});
+   const renderWidth=1700;
+   const scale=renderWidth/base.width;
+   const viewport=page.getViewport({scale});
+   const canvas=document.createElement("canvas");canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
+   await page.render({canvasContext:canvas.getContext("2d"),viewport}).promise;
+   let top=n===firstPage?Math.round(start.y*canvas.height):0;
+   let bottom=n===lastPage?Math.round(end.y*canvas.height):canvas.height;
+   top=Math.max(0,Math.min(canvas.height,top));bottom=Math.max(0,Math.min(canvas.height,bottom));
+   if(bottom<=top)throw new Error("O intervalo selecionado não contém conteúdo.");
+   const sourceHeight=bottom-top;
+   const mmPerPixel=CONTENT_W/canvas.width;
+   let offset=0;
+   while(offset<sourceHeight){
+    if(currentY>=A4H-MARGIN-0.5){out.addPage();currentY=MARGIN;}
+    const availableMm=A4H-MARGIN-currentY;
+    const takePx=Math.min(sourceHeight-offset,Math.floor(availableMm/mmPerPixel));
+    if(takePx<1){out.addPage();currentY=MARGIN;continue;}
+    const piece=document.createElement("canvas");piece.width=canvas.width;piece.height=takePx;
+    const ctx=piece.getContext("2d",{alpha:false});
+    ctx.fillStyle="#fff";ctx.fillRect(0,0,piece.width,piece.height);
+    ctx.drawImage(canvas,0,top+offset,canvas.width,takePx,0,0,canvas.width,takePx);
+    const hMm=takePx*mmPerPixel;
+    out.addImage(piece.toDataURL("image/jpeg",0.94),"JPEG",MARGIN,currentY,CONTENT_W,hMm,undefined,"FAST");
+    currentY+=hMm;offset+=takePx;
+    if(offset<sourceHeight){out.addPage();currentY=MARGIN;}
+   }
+   canvas.width=1;canvas.height=1;
+   setProgress(((n-firstPage+1)/(lastPage-firstPage+1))*100);
+  }
+  out.save(\x60${fileName}-trecho.pdf\x60);
+  workStatus.textContent="PDF gerado. Se o download não começar automaticamente, verifique os downloads do navegador.";
+ }catch(err){console.error(err);workStatus.textContent="Erro ao gerar o PDF: "+err.message;}
+ finally{$("export").disabled=!validRange();setTimeout(()=>setProgress(0,false),1200);}
+});
+})();
+</script>
+</body>
+</html>
