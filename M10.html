@@ -129,11 +129,102 @@ table tr.meta-merged th{font-size:25px}
 #paper::after,#paper.plain::after{content:"" !important;display:block !important;position:absolute !important;inset:11px !important;border:1px solid #d1ad56 !important;background:none !important;pointer-events:none !important;z-index:5 !important;}
 #paper .frame-ornaments,#paper .monastic-emblem,#paper .frame-jewel{display:none !important;}
 </style>
+
+<style id="ajuste-inteligente-celulas">
+/* Cada célula passa a ter uma área de texto independente e limitada. */
+#paper table td, #paper table th {
+  position: relative !important;
+  overflow: hidden !important;
+}
+#paper .cell-text-fit {
+  position: absolute;
+  inset: 2px 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+  line-height: 1.05;
+  text-align: inherit;
+  font-size: inherit;
+  outline: none;
+}
+#paper .cell-text-fit:focus { outline: none; }
+#paper .cell-text-fit:empty::before { content: '\\200b'; }
+</style>
 </head><body><div id="toolbar"><strong>Relação das Missas</strong><button type="button" onclick="saveHTML()">Salvar HTML editado</button><button type="button" onclick="window.print()">Imprimir / PDF</button><label>Letra <input id="fontsize" type="number" min="14" max="60" value="44" onchange="setSize(this.value)"></label><label>Fonte <select id="fontchoice" onchange="setFont(this.value)"><option value="GoticaMonastica" selected="">Gótica Chomsky</option><option value="Georgia">Serifada legível</option></select></label><label><input id="frame" type="checkbox" checked="" onchange="document.getElementById('paper').classList.toggle('plain',!this.checked)"> Moldura</label><button type="button" onclick="clearSchedule()">Limpar horários</button><span id="status">Arquivo aberto — pronto para editar</span></div><p id="help">Clique em qualquer título, nome ou célula para editar. Use Tab para avançar. Salve o HTML para conservar as alterações. Impressão: 29 × 20 cm, paisagem; desative os cabeçalhos e rodapés do navegador.</p><div id="stage" style="zoom: 0.688536;"><main id="paper" style="--size: 44px;"><h1><span contenteditable="true"><b>R</b>elação das <b>M</b>issas por <b>D</b>ia da <b>S</b>emana do <b>M</b>ês de:</span><span id="month" contenteditable="true" aria-label="Mês"></span></h1><table aria-label="Relação das Missas"><colgroup><col><col><col><col><col><col><col><col><col></colgroup><tbody><tr class="meta meta-merged"><th contenteditable="true" spellcheck="false">Data<br>Cl. &amp; Ord.<br>Observação</th><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td></tr><tr class="days"><th contenteditable="true" spellcheck="false">Sacerdotes</th><th contenteditable="true" spellcheck="false">Dies<br>Dominica</th><th contenteditable="true" spellcheck="false">Feria<br>Secunda</th><th contenteditable="true" spellcheck="false">Feria<br>Tertia</th><th contenteditable="true" spellcheck="false">Feria<br>Quarta</th><th contenteditable="true" spellcheck="false">Feria<br>Quinta</th><th contenteditable="true" spellcheck="false">Feria<br>Sexta</th><th contenteditable="true" spellcheck="false">Sabbatum</th><th contenteditable="true" spellcheck="false">Dies<br>Dominica</th></tr><tr><th contenteditable="true" spellcheck="false">D. Prior</th><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td></tr><tr><th contenteditable="true" spellcheck="false">D. João Batista</th><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td></tr><tr><th contenteditable="true" spellcheck="false">D. André</th><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td></tr><tr><th contenteditable="true" spellcheck="false">D. João da Cruz</th><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td></tr><tr><th contenteditable="true" spellcheck="false">D. Geraldo Maria</th><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td></tr><tr><th contenteditable="true" spellcheck="false"></th><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td></tr><tr><th contenteditable="true" spellcheck="false"></th><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td></tr><tr><th contenteditable="true" spellcheck="false"></th><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td><td contenteditable="true" spellcheck="false"></td></tr></tbody></table></main></div><script>
-function setSize(n){document.getElementById('paper').style.setProperty('--size',Math.max(14,Math.min(60,Number(n)||38))+'px')}
-function setFont(v){document.querySelector('table').style.fontFamily=v+',serif';document.querySelector('h1').style.fontFamily=v+',serif'}
-function fit(){document.getElementById('stage').style.zoom=Math.min(1,(window.innerWidth-28)/1448)}window.addEventListener('resize',fit);fit();
-document.getElementById('paper').addEventListener('input',()=>document.getElementById('status').textContent='Alterações feitas — clique em Salvar HTML editado');
+/*
+ * Converte o conteúdo de cada célula em uma área independente.
+ * O invólucro absoluto impede que o conteúdo aumente a linha da tabela;
+ * assim, a célula conserva suas dimensões e o texto é ajustado dentro dela.
+ */
+function prepararCelulas(){
+  document.querySelectorAll('#paper td, #paper th').forEach(celula=>{
+    if(celula.querySelector(':scope > .cell-text-fit')) return;
+    const area=document.createElement('span');
+    area.className='cell-text-fit';
+    area.contentEditable='true';
+    area.spellcheck=false;
+    while(celula.firstChild) area.appendChild(celula.firstChild);
+    celula.removeAttribute('contenteditable');
+    celula.appendChild(area);
+  });
+  ajustarTodasCelulas();
+}
+
+/* Procura por busca binária a maior fonte que cabe na área útil da célula,
+   seguindo o mesmo princípio de ajuste automático usado no M6. */
+function ajustarCelula(area){
+  if(!area.isConnected) return;
+  const base=parseFloat(area.dataset.fonteBase || getComputedStyle(area).fontSize);
+  if(!Number.isFinite(base) || base<=0) return;
+  area.dataset.fonteBase=String(base);
+
+  let minimo=Math.min(6,base);
+  let maximo=base;
+  let melhor=minimo;
+
+  for(let i=0;i<16;i++){
+    const meio=(minimo+maximo)/2;
+    area.style.fontSize=meio+'px';
+    const cabe=area.scrollWidth<=area.clientWidth+1 &&
+               area.scrollHeight<=area.clientHeight+1;
+    if(cabe){
+      melhor=meio;
+      minimo=meio;
+    }else{
+      maximo=meio;
+    }
+  }
+  area.style.fontSize=melhor+'px';
+}
+
+let ajusteAgendado=false;
+function ajustarTodasCelulas(){
+  if(ajusteAgendado) return;
+  ajusteAgendado=true;
+  requestAnimationFrame(()=>{
+    ajusteAgendado=false;
+    document.querySelectorAll('#paper .cell-text-fit').forEach(ajustarCelula);
+  });
+}
+
+function setSize(n){
+  document.getElementById('paper').style.setProperty('--size',Math.max(14,Math.min(60,Number(n)||38))+'px');
+  document.querySelectorAll('#paper .cell-text-fit').forEach(area=>delete area.dataset.fonteBase);
+  ajustarTodasCelulas();
+}
+function setFont(v){document.querySelector('table').style.fontFamily=v+',serif';document.querySelector('h1').style.fontFamily=v+',serif';document.querySelectorAll('#paper .cell-text-fit').forEach(area=>delete area.dataset.fonteBase);ajustarTodasCelulas()}
+function fit(){document.getElementById('stage').style.zoom=Math.min(1,(window.innerWidth-28)/1448)}window.addEventListener('resize',()=>{fit();ajustarTodasCelulas()});prepararCelulas();fit();
+document.getElementById('paper').addEventListener('input',()=>{document.getElementById('status').textContent='Alterações feitas — clique em Salvar HTML editado';ajustarTodasCelulas()});
 document.querySelectorAll('td,th').forEach(c=>c.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();let cells=[...document.querySelectorAll('td,th')];let next=cells[cells.indexOf(c)+(e.shiftKey?-1:1)];if(next)next.focus()}}));
 document.getElementById('paper').addEventListener('paste',e=>{e.preventDefault();let t=e.clipboardData.getData('text/plain');document.execCommand('insertText',false,t)});
 function clearSchedule(){if(!confirm('Limpar somente as células de horários, datas e observações? Os nomes e títulos serão conservados.'))return;document.querySelectorAll('td').forEach(c=>c.textContent='');document.getElementById('status').textContent='Células limpas — salve o arquivo'}
