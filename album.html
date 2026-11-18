@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111522">
+  <title>Álbum de Figurinhas — BMM</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --fundo: #111522;
+      --painel: #202638;
+      --painel-2: #191e2d;
+      --borda: #3b4358;
+      --ouro: #d9b56a;
+      --texto: #f5f0e5;
+      --suave: #b9c0cf;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--texto);
+      background:
+        radial-gradient(ellipse at 50% -15%, #39405a 0, transparent 48%),
+        var(--fundo);
+      font: 15px/1.45 system-ui, sans-serif;
+    }
+    button, select, input { font: inherit; }
+    button, select, input {
+      border: 1px solid #596176;
+      border-radius: 8px;
+      color: var(--texto);
+      background: #151a28;
+    }
+    button {
+      padding: 9px 14px;
+      cursor: pointer;
+    }
+    button:hover:not(:disabled) { border-color: var(--ouro); background: #292d40; }
+    button:disabled { opacity: .4; cursor: not-allowed; }
+    .pagina { width: min(1320px, 100%); margin: 0 auto; padding: 24px clamp(14px, 3vw, 32px) 42px; }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .marca { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    .selo {
+      display: grid; place-items: center;
+      width: 52px; height: 52px; flex: 0 0 52px;
+      border: 1px solid #8e7444; border-radius: 14px;
+      color: #f5d99a; background: linear-gradient(145deg, #3c3042, #1d2633);
+      font-size: 1.55rem;
+    }
+    h1 { margin: 0; color: #fff1ce; font-size: clamp(1.35rem, 3vw, 2rem); line-height: 1.15; }
+    .subtitulo { margin: 5px 0 0; color: var(--suave); }
+    .voltar {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 13px; border: 1px solid var(--borda); border-radius: 8px;
+      color: #f4dfb1; text-decoration: none; white-space: nowrap;
+      background: #202638;
+    }
+    .voltar:hover { border-color: var(--ouro); }
+    .barra {
+      display: grid; grid-template-columns: minmax(220px, 1fr) minmax(180px, 280px);
+      gap: 14px; align-items: end;
+      padding: 16px; margin-bottom: 18px;
+      border: 1px solid var(--borda); border-radius: 13px;
+      background: linear-gradient(145deg, var(--painel), var(--painel-2));
+      box-shadow: 0 10px 30px #0003;
+    }
+    label { display: block; margin-bottom: 6px; color: #f1d89b; font-weight: 650; }
+    select, input { width: 100%; min-width: 0; padding: 10px 11px; }
+    .resumo {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 10px; margin: 0 2px 14px;
+    }
+    .resumo h2 { margin: 0; color: #f1d89b; font-size: 1.12rem; }
+    .contagem { color: var(--suave); font-size: .9rem; }
+    .grade {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(14px, 2.2vw, 26px); align-items: start;
+      padding: clamp(14px, 2.5vw, 26px);
+      border: 1px solid #66563c; border-radius: 16px;
+      background:
+        radial-gradient(ellipse at center, #393044 0, #252638 72%, #1b2030 100%);
+      box-shadow: inset 0 0 0 5px #171c2a, 0 14px 35px #0004;
+    }
+    .figurinha {
+      min-width: 0; padding: 9px;
+      border: 1px solid #655a4c; border-radius: 11px;
+      background: linear-gradient(145deg, #242a3a, #171d2b);
+      box-shadow: 0 6px 16px #0005;
+      cursor: zoom-in;
+      transition: transform .16s ease, border-color .16s ease;
+    }
+    .figurinha:hover { transform: translateY(-3px); border-color: var(--ouro); }
+    .mini-card {
+      position: relative; isolation: isolate; overflow: hidden;
+      width: 100%; aspect-ratio: 5 / 7;
+      container-type: inline-size;
+      background: #30213f;
+      box-shadow: 0 5px 14px #0007;
+    }
+    .mini-card::before {
+      content: ""; position: absolute; z-index: 0;
+      left: 8%; top: 8%; width: 84%; height: 84%;
+      background: var(--art-bg, #30213f); pointer-events: none;
+    }
+    .art-window {
+      position: absolute; z-index: 1; left: 10%; top: 9%; width: 80%; height: 59%;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+      background: var(--art-bg, #30213f);
+    }
+    .art-window img { width: 100%; height: 100%; object-fit: contain; }
+    .moldura { position: absolute; z-index: 5; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
+    .txt {
+      position: absolute; z-index: 8; display: grid; place-items: center;
+      overflow: hidden; overflow-wrap: anywhere; white-space: pre-wrap;
+      color: #fff1c9; text-shadow: 0 1px 3px #000;
+      line-height: 1.1; text-align: center; pointer-events: none;
+    }
+    .number { left:8%;top:4%;width:22%;height:3.5%;font-size:3.2cqw;font-weight:800; }
+    .kind { left:62%;top:4%;width:30%;height:3.5%;font-size:2.6cqw;font-weight:800;text-transform:uppercase; }
+    .title { left:20%;top:70.5%;width:60%;height:5%;font-size:4cqw;font-weight:800; }
+    .description { left:17%;top:77%;width:66%;height:10%;padding:1%;font-size:2.65cqw; }
+    .date { left:10%;top:90%;width:42%;height:3%;font-size:2.1cqw; }
+    .child { left:53%;top:90%;width:37%;height:3%;font-size:2.1cqw;font-weight:750; }
+    .nome-card {
+      margin: 9px 2px 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      color: #f6e6c5; font-size: .9rem; font-weight: 650; text-align: center;
+    }
+    .vazio {
+      padding: 46px 20px; border: 1px dashed #596176; border-radius: 13px;
+      color: var(--suave); text-align: center; background: #1a2030;
+    }
+    .vazio strong { display: block; margin-bottom: 6px; color: #f1d89b; font-size: 1.08rem; }
+    .paginacao {
+      display: flex; justify-content: center; align-items: center; gap: 14px;
+      margin: 18px 0 0;
+    }
+    #paginaAtual { min-width: 100px; color: var(--suave); text-align: center; font-variant-numeric: tabular-nums; }
+    .rodape { margin: 18px 0 0; color: #8f98aa; font-size: .82rem; text-align: center; }
+    .modal {
+      position: fixed; z-index: 20; inset: 0; display: none;
+      align-items: center; justify-content: center; padding: 18px;
+      background: #080b12eF;
+    }
+    .modal.aberto { display: flex; }
+    .modal-conteudo {
+      position: relative; width: min(520px, 100%); max-height: 94vh;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    .modal-card {
+      height: min(76vh, 720px); width: auto; max-width: 100%;
+      aspect-ratio: 5 / 7; position: relative; isolation: isolate; overflow: hidden;
+      container-type: inline-size; background: #30213f;
+      box-shadow: 0 18px 60px #000b;
+    }
+    .modal-card .art-window { left:10%;top:9%;width:80%;height:59%; }
+    .fechar { align-self: flex-end; border-color: #82704d; background: #292d40; }
+    #modalNome { color: #f4dfb1; text-align: center; }
+    @media (max-width: 760px) {
+      .grade { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 12px; }
+      .barra { grid-template-columns: 1fr; }
+      header { align-items: flex-start; }
+      .voltar { font-size: .88rem; padding: 8px 10px; }
+    }
+    @media (max-width: 420px) {
+      .pagina { padding-inline: 10px; }
+      .selo { width: 42px; height: 42px; flex-basis: 42px; }
+      .marca { gap: 10px; }
+      .subtitulo { font-size: .85rem; }
+      .figurinha { padding: 6px; }
+      .grade { gap: 9px; padding: 9px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition:none !important; } }
+  </style>
+</head>
+<body>
+  <main class="pagina">
+    <header>
+      <div class="marca">
+        <div class="selo" aria-hidden="true">✦</div>
+        <div>
+          <h1>Álbum de Figurinhas</h1>
+          <p class="subtitulo">Coleção de cartas da Biblioteca de Modelos do Mosteiro</p>
+        </div>
+      </div>
+      <a class="voltar" href="M9.html">← Voltar ao criador</a>
+    </header>
+
+    <section class="barra" aria-label="Controles do álbum">
+      <div>
+        <label for="deckSelect">Escolher coleção</label>
+        <select id="deckSelect"><option value="">Carregando coleções…</option></select>
+      </div>
+      <div>
+        <label for="busca">Localizar figurinha</label>
+        <input id="busca" type="search" placeholder="Digite o nome ou título…" autocomplete="off">
+      </div>
+    </section>
+
+    <div class="resumo">
+      <h2 id="tituloColecao">Minha coleção</h2>
+      <span class="contagem" id="contagem" aria-live="polite">Carregando…</span>
+    </div>
+
+    <section class="grade" id="grade" aria-label="Figurinhas da coleção"></section>
+    <section class="vazio" id="vazio" hidden>
+      <strong id="vazioTitulo">Nenhuma figurinha encontrada</strong>
+      <span id="vazioTexto">Salve cartas no M9 para que elas apareçam aqui.</span>
+    </section>
+
+    <nav class="paginacao" aria-label="Páginas do álbum">
+      <button id="anterior" type="button" disabled>← Anterior</button>
+      <span id="paginaAtual">Página 1</span>
+      <button id="proxima" type="button" disabled>Próxima →</button>
+    </nav>
+    <p class="rodape">As cartas são lidas diretamente dos decks salvos neste navegador. O álbum não altera nem exclui as figurinhas.</p>
+  </main>
+
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Visualização ampliada da figurinha">
+    <div class="modal-conteudo">
+      <button class="fechar" id="fecharModal" type="button">Fechar ✕</button>
+      <div class="modal-card" id="modalCard"></div>
+      <div id="modalNome"></div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      'use strict';
+      const DB_NAME = 'bmm-meus-decks-db';
+      const STORE_NAME = 'decks';
+      const POR_PAGINA = 6;
+      const $ = id => document.getElementById(id);
+      let decks = [];
+      let cards = [];
+      let filtrados = [];
+      let pagina = 0;
+
+      function abrirBanco() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(DB_NAME, 1);
+          request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+              db.createObjectStore(STORE_NAME, { keyPath: 'name' });
+            }
+          };
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error || new Error('Não foi possível abrir o banco de dados.'));
+        });
+      }
+
+      async function lerDecks() {
+        const db = await abrirBanco();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readonly');
+          const request = tx.objectStore(STORE_NAME).getAll();
+          request.onsuccess = () => resolve(request.result || []);
+          request.onerror = () => reject(request.error);
+          tx.oncomplete = () => db.close();
+          tx.onerror = () => { db.close(); reject(tx.error); };
+        });
+      }
+
+      function elemento(tag, classe, texto) {
+        const el = document.createElement(tag);
+        if (classe) el.className = classe;
+        if (texto !== undefined) el.textContent = texto;
+        return el;
+      }
+
+      function aplicarGeometria(el, g) {
+        if (!g || typeof g !== 'object') return;
+        const valores = ['x','y','w','h','font'].map(k => Number(g[k]));
+        if (!valores.every(Number.isFinite)) return;
+        const [x,y,w,h,font] = valores;
+        if (x < 0 || y < 0 || w <= 0 || h <= 0 || x >= 100 || y >= 100) return;
+        el.style.left = x + '%';
+        el.style.top = y + '%';
+        el.style.width = w + '%';
+        el.style.height = h + '%';
+        el.style.fontSize = Math.max(.8, Math.min(12, font)) + 'cqw';
+      }
+
+      function montarCarta(layout, nome, ampliada = false) {
+        const card = elemento('div', ampliada ? 'modal-card' : 'mini-card');
+        card.style.setProperty('--art-bg', layout.artBg || '#30213f');
+
+        const janela = elemento('div', 'art-window');
+        if (layout.artData) {
+          const img = elemento('img');
+          img.alt = 'Ilustração de ' + (layout.fields?.title || nome);
+          img.src = layout.artData;
+          janela.appendChild(img);
+        }
+        card.appendChild(janela);
+
+        const campos = layout.fields || {};
+        const textos = [
+          ['vNumber','number','number'],
+          ['vKind','kind','kind'],
+          ['vTitle','title','title'],
+          ['vDescription','description','description'],
+          ['vDate','date','date'],
+          ['vChild','child','child']
+        ];
+        for (const [id, field, classe] of textos) {
+          const el = elemento('div', 'txt ' + classe, campos[field] || '');
+          aplicarGeometria(el, layout.boxes?.[id] || layout.boxes?.[field]);
+          card.appendChild(el);
+        }
+
+        const molduraSrc = layout.frameData || layout.framePath || '';
+        if (molduraSrc) {
+          const frame = elemento('img', 'moldura');
+          frame.alt = '';
+          frame.src = molduraSrc;
+          card.appendChild(frame);
+        }
+        return card;
+      }
+
+      function abrirModal(item) {
+        $('modalCard').replaceWith(montarCarta(item.layout, item.name, true));
+        $('modalNome').textContent = item.name;
+        $('modal').classList.add('aberto');
+        $('fecharModal').focus();
+      }
+      function fecharModal() {
+        $('modal').classList.remove('aberto');
+        $('modalCard').replaceChildren();
+      }
+
+      function atualizarFiltro() {
+        const termo = $('busca').value.trim().toLocaleLowerCase('pt-BR');
+        filtrados = cards.filter(item => {
+          const titulo = item.layout?.fields?.title || '';
+          return !termo || (item.name + ' ' + titulo).toLocaleLowerCase('pt-BR').includes(termo);
+        });
+        pagina = 0;
+        desenhar();
+      }
+
+      function desenhar() {
+        const total = filtrados.length;
+        const paginas = Math.max(1, Math.ceil(total / POR_PAGINA));
+        pagina = Math.min(pagina, paginas - 1);
+        const inicio = pagina * POR_PAGINA;
+        const lote = filtrados.slice(inicio, inicio + POR_PAGINA);
+        $('grade').replaceChildren();
+
+        for (const item of lote) {
+          const tile = elemento('button', 'figurinha');
+          tile.type = 'button';
+          tile.setAttribute('aria-label', 'Ampliar figurinha ' + item.name);
+          tile.appendChild(montarCarta(item.layout, item.name));
+          tile.appendChild(elemento('div', 'nome-card', item.name));
+          tile.addEventListener('click', () => abrirModal(item));
+          $('grade').appendChild(tile);
+        }
+
+        $('grade').hidden = total === 0;
+        $('vazio').hidden = total !== 0;
+        $('vazioTitulo').textContent = cards.length ? 'Nenhuma figurinha encontrada' : 'Este álbum ainda está vazio';
+        $('vazioTexto').textContent = cards.length
+          ? 'Tente outro termo de busca.'
+          : 'Abra o M9, salve cartas em um deck e volte aqui para montar sua coleção.';
+        $('contagem').textContent = total + (total === 1 ? ' figurinha' : ' figurinhas') +
+          (cards.length !== total ? ' encontradas' : ' na coleção');
+        $('paginaAtual').textContent = 'Página ' + (pagina + 1) + ' de ' + paginas;
+        $('anterior').disabled = pagina === 0 || total === 0;
+        $('proxima').disabled = pagina >= paginas - 1 || total === 0;
+      }
+
+      function selecionarDeck(nome) {
+        const deck = decks.find(item => item.name === nome);
+        cards = Object.entries(deck?.cards || {}).map(([name, layout]) => ({ name, layout }))
+          .sort((a,b) => a.name.localeCompare(b.name, 'pt-BR'));
+        $('tituloColecao').textContent = nome || 'Minha coleção';
+        $('busca').value = '';
+        atualizarFiltro();
+      }
+
+      async function iniciar() {
+        try {
+          decks = await lerDecks();
+          decks.sort((a,b) => a.name.localeCompare(b.name, 'pt-BR'));
+          const select = $('deckSelect');
+          select.replaceChildren();
+          if (!decks.length) {
+            select.add(new Option('Nenhuma coleção salva', ''));
+            cards = [];
+            filtrados = [];
+            $('tituloColecao').textContent = 'Minha coleção';
+            desenhar();
+            return;
+          }
+          for (const deck of decks) select.add(new Option(deck.name, deck.name));
+          selecionarDeck(decks[0].name);
+          select.addEventListener('change', () => selecionarDeck(select.value));
+        } catch (error) {
+          $('grade').hidden = true;
+          $('vazio').hidden = false;
+          $('vazioTitulo').textContent = 'Não foi possível abrir o álbum';
+          $('vazioTexto').textContent = error?.message || 'Verifique se o navegador permite armazenamento local.';
+          $('contagem').textContent = 'Erro ao carregar';
+        }
+      }
+
+      $('busca').addEventListener('input', atualizarFiltro);
+      $('anterior').addEventListener('click', () => { pagina--; desenhar(); });
+      $('proxima').addEventListener('click', () => { pagina++; desenhar(); });
+      $('fecharModal').addEventListener('click', fecharModal);
+      $('modal').addEventListener('click', e => { if (e.target === $('modal')) fecharModal(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModal(); });
+      iniciar();
+    })();
+  </script>
+</body>
+</html>
