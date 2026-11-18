@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedido de Autorização — A4</title>
+<style>
+  :root{
+    --verde:#385b2b;
+    --verde-claro:#718563;
+    --texto:#273025;
+    --linha:#aeb5a7;
+    --papel:#fbfaf4;
+    --borda:#dedbcf;
+    --fundo:#e9e7df;
+  }
+
+  *{box-sizing:border-box}
+
+  body{
+    margin:0;
+    background:var(--fundo);
+    color:var(--texto);
+    font-family: Georgia, "Times New Roman", serif;
+  }
+
+  .toolbar{
+    position:sticky;
+    top:0;
+    z-index:50;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+    padding:10px 14px;
+    background:#263223;
+    color:white;
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    box-shadow:0 2px 8px #0003;
+  }
+  .toolbar button, .toolbar select{
+    border:1px solid #ffffff44;
+    border-radius:6px;
+    padding:8px 11px;
+    background:#ffffff12;
+    color:white;
+    font:inherit;
+    cursor:pointer;
+  }
+  .toolbar button:hover{background:#ffffff24}
+  .toolbar .primary{background:#597b4c;border-color:#78966d}
+  .toolbar .danger{background:#733f3f}
+  .toolbar .spacer{flex:1}
+  .toolbar label{font-size:13px;display:flex;align-items:center;gap:6px}
+
+  .document-wrap{
+    padding:24px;
+    display:flex;
+    justify-content:center;
+  }
+
+  .page{
+    width:210mm;
+    min-height:297mm;
+    padding:16mm 17mm 8mm;
+    background:
+      radial-gradient(circle at 20% 10%, #ffffff99 0 1px, transparent 1.5px),
+      radial-gradient(circle at 80% 70%, #e9e5d855 0 1px, transparent 1.5px),
+      var(--papel);
+    background-size:17px 17px,23px 23px,auto;
+    box-shadow:0 3px 18px #0002;
+    position:relative;
+  }
+
+  .header{text-align:center}
+  .cross{
+    color:var(--verde);
+    font-size:28px;
+    line-height:1;
+    margin-bottom:3mm;
+  }
+  .ornament{
+    color:var(--verde);
+    letter-spacing:7px;
+    font-size:16px;
+    line-height:1;
+  }
+  h1{
+    margin:0;
+    color:var(--verde);
+    font-size:24px;
+    letter-spacing:.5px;
+    font-weight:700;
+  }
+  .subline{
+    width:54mm;
+    height:1px;
+    background:#9da696;
+    margin:3mm auto 4mm;
+  }
+  .meta-top{
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:end;
+    gap:8mm;
+    margin:0 0 5mm;
+    font-size:11pt;
+  }
+  .meta-field{
+    display:flex;
+    align-items:end;
+    gap:3px;
+    min-width:0;
+  }
+  .meta-label{
+    font-weight:bold;
+    color:var(--verde);
+    white-space:nowrap;
+  }
+  .requester-field .editable{flex:1}
+  .date-field .editable{min-width:36mm}
+
+  .requests{display:flex;flex-direction:column;gap:4mm}
+
+  .request{
+    border:1px solid var(--borda);
+    border-radius:4mm;
+    padding:4mm 5mm 4mm 12mm;
+    position:relative;
+    background:#fffdf8aa;
+  }
+  .number{
+    position:absolute;
+    left:4mm;
+    top:4mm;
+    width:7mm;
+    height:7mm;
+    border-radius:1.5mm;
+    background:var(--verde);
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font:700 11pt Georgia,serif;
+  }
+
+  .field{
+    margin-bottom:3mm;
+  }
+  .field-label{
+    color:var(--verde);
+    font-size:12pt;
+    font-weight:bold;
+    display:inline;
+  }
+  .editable{
+    outline:none;
+    border-bottom:1px solid var(--linha);
+    min-height:7mm;
+    padding:1mm 0 .8mm;
+    font-size:11pt;
+    line-height:1.35;
+    white-space:pre-wrap;
+  }
+  .editable:empty:before{
+    content:attr(data-placeholder);
+    color:#a3a79f;
+    font-style:italic;
+  }
+
+  .decision{
+    margin-top:2mm;
+    padding-left:12mm;
+    position:relative;
+  }
+  .quill{
+    position:absolute;
+    left:-1mm;
+    top:2mm;
+    color:var(--verde);
+    font-size:25px;
+    opacity:.85;
+  }
+  .choice{
+    display:flex;
+    align-items:flex-start;
+    gap:3mm;
+    margin:2.5mm 0;
+    font-size:10.5pt;
+    line-height:1.25;
+    break-inside:avoid;
+  }
+  .choice input{
+    appearance:none;
+    width:6mm;
+    height:6mm;
+    border:1.4px solid var(--verde);
+    background:#fff;
+    flex:0 0 6mm;
+    margin:0;
+    cursor:pointer;
+  }
+  .choice input:checked{
+    background:var(--verde);
+    box-shadow:inset 0 0 0 1.2mm white;
+  }
+  .choice-text{
+    outline:none;
+    flex:1;
+    min-width:0;
+  }
+  .condition-lines{
+    margin-left:9mm;
+    margin-top:-1mm;
+    margin-bottom:1mm;
+  }
+  .condition-lines div{
+    height:6mm;
+    border-bottom:1px solid var(--linha);
+  }
+
+  .remove{
+    position:absolute;
+    right:3mm;
+    top:3mm;
+    border:0;
+    background:transparent;
+    color:#9c9189;
+    font-size:16px;
+    cursor:pointer;
+    display:none;
+  }
+  .request:hover .remove{display:block}
+
+  .divider{
+    text-align:center;
+    color:var(--verde-claro);
+    font-size:14px;
+    line-height:1;
+  }
+
+  .footer{
+    margin-top:7mm;
+    padding-top:5mm;
+    border-top:1px solid #b6bcaf;
+    display:grid;
+    grid-template-columns:1fr 42mm;
+    gap:8mm;
+    align-items:end;
+    font-size:10.5pt;
+  }
+  .signature-line,.date-line{
+    border-bottom:1px solid #6d756a;
+    min-height:8mm;
+    padding-bottom:1mm;
+  }
+  .footer-label{margin-bottom:1mm}
+
+  [contenteditable="true"]:focus{
+    background:#fffff0;
+    box-shadow:0 0 0 2px #7d966c33;
+  }
+
+  .empty-message{
+    text-align:center;
+    color:#8b9088;
+    padding:10mm;
+    border:1px dashed var(--borda);
+  }
+
+  @media print{
+    @page{
+      size:A4 portrait;
+      margin:0;
+    }
+    body{
+      background:white;
+    }
+    .toolbar{display:none!important}
+    .document-wrap{padding:0}
+    .page{
+      width:210mm;
+      min-height:297mm;
+      margin:0;
+      box-shadow:none;
+    }
+    .remove{display:none!important}
+    [contenteditable="true"]:focus{background:none;box-shadow:none}
+  }
+
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="primary" onclick="addRequest()">＋ Adicionar pedido</button>
+  <button onclick="saveData()">💾 Salvar</button>
+  <button onclick="loadData()">↶ Recuperar</button>
+  <button class="danger" onclick="clearAll()">Limpar tudo</button>
+  <span class="spacer"></span>
+  <span style="font-size:13px;opacity:.85">Identidade: Linux Mint 17</span>
+  <button onclick="signWithLinuxMint17()">✒ Assinar decisão</button>
+  <button onclick="verifyLinuxMint17()">✓ Verificar assinatura</button>
+  <span id="signatureStatus" style="font-size:12px;opacity:.85">Sem assinatura</span>
+  <span class="spacer"></span>
+  <span style="font-size:13px;opacity:.85">Formato: A4 retrato</span>
+  <button class="primary" onclick="window.print()">🖨 Imprimir A4</button>
+</div>
+
+<div class="document-wrap" id="documentWrap">
+  <section class="page" id="page1">
+    <header class="header">
+      <div class="cross">✠</div>
+      <div class="ornament">⌁ ❦ ⌁</div>
+      <h1>PEDIDO DE AUTORIZAÇÃO</h1>
+      <div class="subline"></div>
+      <div class="meta-top">
+        <div class="meta-field requester-field">
+          <span class="meta-label">Solicitante:</span>
+          <span class="editable" contenteditable="true" data-placeholder="Nome de quem solicita"></span>
+        </div>
+        <div class="meta-field date-field">
+          <span class="meta-label">Data:</span>
+          <span class="editable" contenteditable="true" data-placeholder="____ / ____ / ______"></span>
+        </div>
+      </div>
+    </header>
+
+    <main class="requests" id="requests"></main>
+
+    <footer class="footer">
+      <div>
+        <div class="footer-label">Assinatura:</div>
+        <div class="signature-line"></div>
+      </div>
+      <div>
+        <div class="footer-label">Data:</div>
+        <div class="date-line">____ / ____ / ______</div>
+      </div>
+    </footer>
+  </section>
+</div>
+
+<template id="requestTemplate">
+  <article class="request">
+    <button class="remove" title="Remover este pedido" onclick="removeRequest(this)">×</button>
+    <div class="number"></div>
+
+    <div class="field">
+      <span class="field-label">Pedido:</span>
+      <div class="editable" contenteditable="true" data-placeholder="Escreva aqui o pedido."></div>
+    </div>
+
+    <div class="field">
+      <span class="field-label">Explicação:</span>
+      <div class="editable" contenteditable="true" data-placeholder="Explique brevemente o motivo ou contexto."></div>
+    </div>
+
+    <div class="decision">
+      <div class="quill">♢</div>
+
+      <label class="choice">
+        <input type="checkbox">
+        <span class="choice-text editable" contenteditable="true">Autorizo.</span>
+      </label>
+
+      <label class="choice">
+        <input type="checkbox">
+        <span class="choice-text editable" contenteditable="true">Não autorizo.</span>
+      </label>
+
+      <label class="choice">
+        <input type="checkbox">
+        <span class="choice-text editable" contenteditable="true">Autorizo com as seguintes condições:</span>
+      </label>
+
+      <div class="condition-lines">
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+  </article>
+</template>
+
+<script>
+  const STORAGE_KEY = "pedido-autorizacao-v1";
+
+  function addRequest(data = {}) {
+    const tpl = document.getElementById("requestTemplate");
+    const clone = tpl.content.cloneNode(true);
+    const article = clone.querySelector(".request");
+
+    article.querySelectorAll(".editable")[0].innerText = data.pedido || "";
+    article.querySelectorAll(".editable")[1].innerText = data.explicacao || "";
+
+    const texts = article.querySelectorAll(".choice-text");
+    if (data.op1) texts[0].innerText = data.op1;
+    if (data.op2) texts[1].innerText = data.op2;
+    if (data.op3) texts[2].innerText = data.op3;
+
+    const checks = article.querySelectorAll("input");
+    if (data.checked) data.checked.forEach((v,i)=>checks[i].checked=!!v);
+
+    document.getElementById("requests").appendChild(clone);
+    renumber();
+  }
+
+  function removeRequest(btn){
+    const articles = document.querySelectorAll(".request");
+    if(articles.length <= 1){
+      alert("É preciso manter pelo menos um pedido.");
+      return;
+    }
+    btn.closest(".request").remove();
+    renumber();
+  }
+
+  function renumber(){
+    document.querySelectorAll(".request").forEach((el,i)=>{
+      el.querySelector(".number").textContent = i+1;
+    });
+  }
+
+  function serialize(){
+    return {
+      requester: document.querySelector(".requester-field .editable").innerText,
+      topDate: document.querySelector(".date-field .editable").innerText,
+      requests:[...document.querySelectorAll(".request")].map(r=>({
+        pedido:r.querySelectorAll(".editable")[0].innerText,
+        explicacao:r.querySelectorAll(".editable")[1].innerText,
+        op1:r.querySelectorAll(".choice-text")[0].innerText,
+        op2:r.querySelectorAll(".choice-text")[1].innerText,
+        op3:r.querySelectorAll(".choice-text")[2].innerText,
+        checked:[...r.querySelectorAll("input")].map(x=>x.checked)
+      }))
+    };
+  }
+
+  function saveData(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serialize()));
+    alert("Documento salvo neste navegador.");
+  }
+
+  function loadData(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw){
+      alert("Não há documento salvo neste navegador.");
+      return;
+    }
+    const data = JSON.parse(raw);
+    document.querySelector(".requester-field .editable").innerText = data.requester || "";
+    document.querySelector(".date-field .editable").innerText = data.topDate || "";
+    document.getElementById("requests").innerHTML = "";
+    (data.requests || []).forEach(addRequest);
+    if(!data.requests?.length) addRequest();
+  }
+
+  function clearAll(){
+    if(!confirm("Apagar todos os textos e voltar ao formulário vazio?")) return;
+    document.querySelector(".requester-field .editable").innerText = "";
+    document.querySelector(".date-field .editable").innerText = "";
+    document.getElementById("requests").innerHTML = "";
+    localStorage.removeItem(SIGNATURE_KEY);
+    setSignatureStatus("Sem assinatura");
+    addRequest();
+  }
+
+  document.addEventListener("change", e=>{
+    if(e.target.matches(".choice input")){
+      const group=e.target.closest(".request");
+      group.querySelectorAll(".choice input").forEach(box=>{
+        if(box!==e.target) box.checked=false;
+      });
+    }
+  });
+
+  // Documento inicial: três pedidos curtos como exemplo.
+  addRequest();
+  addRequest();
+  addRequest();
+
+  const SIGNER_URL = "http://127.0.0.1:17817";
+  const SIGNATURE_KEY = "pedido-autorizacao-linux-mint-17-signature-v1";
+
+  function canonicalDocument(){
+    return JSON.stringify(serialize());
+  }
+
+  function setSignatureStatus(text){
+    const el=document.getElementById("signatureStatus");
+    if(el) el.textContent=text;
+  }
+
+  async function signWithLinuxMint17(){
+    const doc=serialize();
+    for(const r of doc.requests){
+      if(r.checked.filter(Boolean).length !== 1){
+        alert("Antes de assinar, cada pedido precisa ter exatamente uma opção marcada.");
+        return;
+      }
+    }
+    if(!confirm("Assinar esta decisão como Linux Mint 17?\n\nA assinatura ficará vinculada ao assinador local deste notebook.")) return;
+    try{
+      const response=await fetch(SIGNER_URL+"/sign",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({payload:canonicalDocument()})
+      });
+      const data=await response.json();
+      if(!response.ok) throw new Error(data.error || "Falha no assinador.");
+      localStorage.setItem(SIGNATURE_KEY, JSON.stringify({payload:canonicalDocument(),...data, signedAt:new Date().toISOString()}));
+      setSignatureStatus("✓ Assinado por Linux Mint 17");
+      alert("Decisão assinada com sucesso.\n\nImpressão da chave: "+data.fingerprint.slice(0,16)+"…");
+    }catch(e){
+      setSignatureStatus("Assinador não conectado");
+      alert("Não foi possível assinar.\n\nInicie primeiro o arquivo linux_mint_17_signer.py no Linux Mint.");
+    }
+  }
+
+  async function verifyLinuxMint17(){
+    const raw=localStorage.getItem(SIGNATURE_KEY);
+    if(!raw){ alert("Este documento ainda não possui uma assinatura Linux Mint 17."); return; }
+    const sig=JSON.parse(raw);
+    if(sig.payload !== canonicalDocument()){
+      setSignatureStatus("✗ Documento alterado após assinatura");
+      alert("A assinatura NÃO corresponde ao documento atual.\n\nO conteúdo foi alterado depois da assinatura.");
+      return;
+    }
+    try{
+      const response=await fetch(SIGNER_URL+"/status");
+      const current=await response.json();
+      if(current.fingerprint !== sig.fingerprint){
+        setSignatureStatus("✗ Chave diferente");
+        alert("A assinatura foi criada por uma chave diferente da chave atualmente instalada.");
+        return;
+      }
+      setSignatureStatus("✓ Assinatura íntegra — Linux Mint 17");
+      alert("Assinatura íntegra.\n\nIdentidade: "+sig.identity+"\nAlgoritmo: "+sig.algorithm+"\nImpressão da chave: "+sig.fingerprint);
+    }catch(e){
+      setSignatureStatus("✓ Documento coincide com assinatura salva");
+      alert("O documento coincide com a assinatura salva, mas o assinador Linux Mint 17 não está disponível para confirmar a chave atual.");
+    }
+  }
+
+  // Atalhos úteis
+  document.addEventListener("keydown", e=>{
+    if((e.ctrlKey || e.metaKey) && e.key==="s"){
+      e.preventDefault();
+      saveData();
+    }
+  });
+</script>
+</body>
+</html>
