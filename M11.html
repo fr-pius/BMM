@@ -86,8 +86,8 @@ const A4W=210, A4H=297, MARGIN=10, CONTENT_W=A4W-2*MARGIN, CONTENT_H=A4H-2*MARGI
 if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}
 function setProgress(p,show=true){$("progress").style.display=show?"block":"none";$("progressBar").style.width=Math.max(0,Math.min(100,p))+"%";}
 function updateSelection(){
-  $("startLabel").textContent=start?\x60pág. ${start.page} · ${Math.round(start.y*100)}%\x60:"não definido";
-  $("endLabel").textContent=end?\x60pág. ${end.page} · ${Math.round(end.y*100)}%\x60:"última página";
+  $("startLabel").textContent=start?`pág. ${start.page} · ${Math.round(start.y*100)}%`:"não definido";
+  $("endLabel").textContent=end?`pág. ${end.page} · ${Math.round(end.y*100)}%`:"última página";
   document.querySelectorAll(".page-card").forEach(card=>{
     const n=Number(card.dataset.page);card.classList.toggle("outside",!!(start&&n<start.page)||!!(end&&n>end.page));
     card.classList.toggle("between",!!start&&!!end&&n>=start.page&&n<=end.page);
@@ -124,7 +124,7 @@ fileInput.addEventListener("change",async e=>{
   pdf=await pdfjsLib.getDocument({data:bytes}).promise;
   start={page:1,y:0};end={page:pdf.numPages,y:1};
   $("startMode").disabled=$("endMode").disabled=$("reset").disabled=false;
-  statusEl.textContent=\x60${file.name} · ${pdf.numPages} página(s)\x60;
+  statusEl.textContent=`${file.name} · ${pdf.numPages} página(s)`;
   for(let n=1;n<=pdf.numPages;n++){
    const page=await pdf.getPage(n);
    const base=page.getViewport({scale:1});
@@ -133,7 +133,7 @@ fileInput.addEventListener("change",async e=>{
    const canvas=document.createElement("canvas");canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
    await page.render({canvasContext:canvas.getContext("2d"),viewport}).promise;
    const card=document.createElement("div");card.className="page-card";card.dataset.page=n;
-   const title=document.createElement("div");title.className="page-title";title.innerHTML=\x60<span>Página ${n}</span><span>${Math.round(base.width)} × ${Math.round(base.height)}</span>\x60;
+   const title=document.createElement("div");title.className="page-title";title.innerHTML=`<span>Página ${n}</span><span>${Math.round(base.width)} × ${Math.round(base.height)}</span>`;
    const wrap=document.createElement("div");wrap.className="preview-wrap";wrap.appendChild(canvas);
    const markers=document.createElement("div");markers.style.cssText="position:absolute;inset:0;pointer-events:none";wrap.appendChild(markers);
    wrap.addEventListener("click",ev=>{
@@ -156,7 +156,7 @@ $("export").addEventListener("click",async()=>{
   let currentY=MARGIN;
   const firstPage=start.page,lastPage=end.page;
   for(let n=firstPage;n<=lastPage;n++){
-   workStatus.textContent=\x60Processando página ${n} de ${lastPage}…\x60;
+   workStatus.textContent=`Processando página ${n} de ${lastPage}…`;
    const page=pageViews[n-1].page;
    const base=page.getViewport({scale:1});
    const renderWidth=1700;
@@ -188,7 +188,7 @@ $("export").addEventListener("click",async()=>{
    canvas.width=1;canvas.height=1;
    setProgress(((n-firstPage+1)/(lastPage-firstPage+1))*100);
   }
-  out.save(\x60${fileName}-trecho.pdf\x60);
+  out.save(`${fileName}-trecho.pdf`);
   workStatus.textContent="PDF gerado. Se o download não começar automaticamente, verifique os downloads do navegador.";
  }catch(err){console.error(err);workStatus.textContent="Erro ao gerar o PDF: "+err.message;}
  finally{$("export").disabled=!validRange();setTimeout(()=>setProgress(0,false),1200);}
