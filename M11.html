@@ -70,7 +70,7 @@ footer{color:var(--muted);font-size:.83rem;text-align:center;padding:8px}
   <div class="legend"><span><i class="dot" style="background:#16834f"></i>Início</span><span><i class="dot" style="background:#c17b13"></i>Fim</span><span>O trecho entre os marcadores será mantido.</span></div>
   <div id="pages" class="pages" style="margin-top:15px"></div>
 </section>
-<div class="note"><b>Tratamento automático de espaços:</b> grandes faixas vazias no meio das páginas são reduzidas durante a recomposição, mantendo um pequeno intervalo entre os blocos de texto. O PDF gerado é composto por imagens de alta resolução; o texto não será selecionável nem pesquisável. O arquivo original não é alterado.</div>
+<div class="note"><b>Observação:</b> para preservar a aparência e permitir recortar qualquer região, o PDF gerado transforma as páginas em imagens de alta resolução. O texto do arquivo final não será selecionável nem pesquisável. O arquivo original não é alterado.</div>
 <footer>PDF Trechos · processamento local no navegador</footer>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -102,57 +102,6 @@ function updateSelection(){
 function addMarker(parent,y,cls,label){
  const line=document.createElement("div");line.className="marker "+cls;line.style.top=(y*100)+"%";
  const tag=document.createElement("span");tag.textContent=label;line.appendChild(tag);parent.appendChild(line);
-}
-// Reduz grandes faixas vazias no interior de cada fragmento, preservando
-// um pequeno espaçamento entre os blocos de texto.
-function compactVerticalWhitespace(source, top, bottom){
- const width=source.width, height=bottom-top;
- if(height<100)return source;
- const pixels=source.getContext("2d").getImageData(0,top,width,height).data;
- const blank=new Uint8Array(height);
- for(let y=0;y<height;y++){
-  let marks=0, row=y*width*4;
-  for(let x=0;x<width;x++){
-   const i=row+x*4;
-   if(pixels[i]<242||pixels[i+1]<242||pixels[i+2]<242){
-    marks++;
-    if(marks>2)break;
-   }
-  }
-  blank[y]=marks<=2?1:0;
- }
- const MAX_GAP=72, KEEP_GAP=36;
- const cuts=[];
- let y=0;
- while(y<height){
-  if(!blank[y]){y++;continue;}
-  const begin=y;
-  while(y<height&&blank[y])y++;
-  const size=y-begin;
-  if(begin>0&&y<height&&size>MAX_GAP){
-   const keepTop=Math.floor(KEEP_GAP/2);
-   const keepBottom=KEEP_GAP-keepTop;
-   cuts.push({from:begin+keepTop,to:y-keepBottom});
-  }
- }
- if(!cuts.length)return source;
- const result=document.createElement("canvas");
- result.width=width;
- result.height=height-cuts.reduce((sum,c)=>sum+c.to-c.from,0);
- const ctx=result.getContext("2d",{alpha:false});
- ctx.fillStyle="#fff";ctx.fillRect(0,0,result.width,result.height);
- let sourceY=0,destY=0;
- for(const cut of cuts){
-  const partHeight=cut.from-sourceY;
-  if(partHeight>0){
-   ctx.drawImage(source,0,top+sourceY,width,partHeight,0,destY,width,partHeight);
-   destY+=partHeight;
-  }
-  sourceY=cut.to;
- }
- const rest=height-sourceY;
- if(rest>0)ctx.drawImage(source,0,top+sourceY,width,rest,0,destY,width,rest);
- return result;
 }
 function validRange(){
  if(!start||!end)return false;
@@ -219,11 +168,8 @@ $("export").addEventListener("click",async()=>{
    let bottom=n===lastPage?Math.round(end.y*canvas.height):canvas.height;
    top=Math.max(0,Math.min(canvas.height,top));bottom=Math.max(0,Math.min(canvas.height,bottom));
    if(bottom<=top)throw new Error("O intervalo selecionado não contém conteúdo.");
-   // Compacta somente grandes intervalos vazios internos; margens e
-   // pequenos espaços naturais entre linhas/parágrafos são preservados.
-   const compacted=compactVerticalWhitespace(canvas,top,bottom);
-   const sourceHeight=compacted.height;
-   const mmPerPixel=CONTENT_W/compacted.width;
+   const sourceHeight=bottom-top;
+   const mmPerPixel=CONTENT_W/canvas.width;
    let offset=0;
    while(offset<sourceHeight){
     if(currentY>=A4H-MARGIN-0.5){out.addPage();currentY=MARGIN;}
@@ -233,14 +179,13 @@ $("export").addEventListener("click",async()=>{
     const piece=document.createElement("canvas");piece.width=canvas.width;piece.height=takePx;
     const ctx=piece.getContext("2d",{alpha:false});
     ctx.fillStyle="#fff";ctx.fillRect(0,0,piece.width,piece.height);
-    ctx.drawImage(compacted,0,offset,compacted.width,takePx,0,0,compacted.width,takePx);
+    ctx.drawImage(canvas,0,top+offset,canvas.width,takePx,0,0,canvas.width,takePx);
     const hMm=takePx*mmPerPixel;
     out.addImage(piece.toDataURL("image/jpeg",0.94),"JPEG",MARGIN,currentY,CONTENT_W,hMm,undefined,"FAST");
     currentY+=hMm;offset+=takePx;
     if(offset<sourceHeight){out.addPage();currentY=MARGIN;}
    }
    canvas.width=1;canvas.height=1;
-   if(compacted!==canvas){compacted.width=1;compacted.height=1;}
    setProgress(((n-firstPage+1)/(lastPage-firstPage+1))*100);
   }
   out.save(`${fileName}-trecho.pdf`);
