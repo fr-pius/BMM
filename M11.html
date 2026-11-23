@@ -137,6 +137,32 @@ function findInkBounds(canvas){
  if(first>=canvas.height||last<first)return {top:0,bottom:canvas.height};
  return {top:first,bottom:last+1};
 }
+function findSafeCut(canvas,target,minY,maxY){
+ const ctx=canvas.getContext("2d",{willReadFrequently:true});
+ const {data}=ctx.getImageData(0,0,canvas.width,canvas.height);
+ const rowInk=new Uint32Array(canvas.height);
+ for(let y=minY;y<maxY;y++){
+  let count=0, row=y*canvas.width*4;
+  for(let x=0;x<canvas.width;x++){
+   const i=row+x*4;
+   if(data[i]<242||data[i+1]<242||data[i+2]<242)count++;
+  }
+  rowInk[y]=count;
+ }
+ const radius=4, maxShift=Math.min(140,Math.floor(canvas.width*0.09));
+ const lo=Math.max(minY+radius,target-maxShift),hi=Math.min(maxY-radius,target+maxShift);
+ let best=target,bestScore=Infinity;
+ for(let y=lo;y<=hi;y++){
+  let ink=0;
+  for(let k=-radius;k<=radius;k++)ink+=rowInk[y+k];
+  const distance=Math.abs(y-target);
+  // Prioriza faixas horizontais vazias; em páginas digitalizadas, escolhe a faixa menos carregada.
+  const score=ink*100+distance;
+  if(score<bestScore){bestScore=score;best=y;}
+  if(ink===0&&distance===0)break;
+ }
+ return best;
+}
 function setMode(m){
  mode=m;$("startMode").classList.toggle("active",m==="start");$("endMode").classList.toggle("active",m==="end");
  $("instruction").textContent=m==="start"?"Toque na página e na altura em que o trecho deve começar.":"Toque na página e na altura em que o trecho deve terminar.";
@@ -234,18 +260,24 @@ $("export").addEventListener("click",async()=>{
     if(partBottom<=partTop)continue;
     let offset=0,sourceHeight=partBottom-partTop;
     while(offset<sourceHeight){
-    if(currentY>=A4H-MARGIN-0.5){out.addPage();currentY=MARGIN;}
-    const availableMm=A4H-MARGIN-currentY;
-    const takePx=Math.min(sourceHeight-offset,Math.floor(availableMm/mmPerPixel));
-    if(takePx<1){out.addPage();currentY=MARGIN;continue;}
-    const piece=document.createElement("canvas");piece.width=canvas.width;piece.height=takePx;
-    const ctx=piece.getContext("2d",{alpha:false});
-    ctx.fillStyle="#fff";ctx.fillRect(0,0,piece.width,piece.height);
-    ctx.drawImage(canvas,0,partTop+offset,canvas.width,takePx,0,0,canvas.width,takePx);
-    const hMm=takePx*mmPerPixel;
-    out.addImage(piece.toDataURL("image/jpeg",0.94),"JPEG",MARGIN,currentY,CONTENT_W,hMm,undefined,"FAST");
-    currentY+=hMm;offset+=takePx;
-    if(offset<sourceHeight){out.addPage();currentY=MARGIN;}
+     // Só cria a próxima página quando há conteúdo para colocar nela.
+     if(currentY>=A4H-MARGIN-0.5){out.addPage();currentY=MARGIN;}
+     const availableMm=A4H-MARGIN-currentY;
+     const maxPx=Math.min(sourceHeight-offset,Math.floor(availableMm/mmPerPixel));
+     if(maxPx<1){currentY=A4H-MARGIN;continue;}
+     let takePx=maxPx;
+     if(maxPx<sourceHeight-offset){
+      const target=partTop+offset+maxPx;
+      const safe=findSafeCut(canvas,target,partTop+offset+1,partBottom-1);
+      takePx=Math.max(1,Math.min(maxPx,safe-(partTop+offset)));
+     }
+     const piece=document.createElement("canvas");piece.width=canvas.width;piece.height=takePx;
+     const ctx=piece.getContext("2d",{alpha:false});
+     ctx.fillStyle="#fff";ctx.fillRect(0,0,piece.width,piece.height);
+     ctx.drawImage(canvas,0,partTop+offset,canvas.width,takePx,0,0,canvas.width,takePx);
+     const hMm=takePx*mmPerPixel;
+     out.addImage(piece.toDataURL("image/jpeg",0.94),"JPEG",MARGIN,currentY,CONTENT_W,hMm,undefined,"FAST");
+     currentY+=hMm;offset+=takePx;
     }
    }
    canvas.width=1;canvas.height=1;
