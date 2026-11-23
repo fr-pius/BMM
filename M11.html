@@ -53,6 +53,9 @@ footer{color:var(--muted);font-size:.83rem;text-align:center;padding:8px}
     <button id="startMode" disabled>Marcar início</button>
     <button id="endMode" disabled>Marcar fim</button>
     <button id="reset" disabled>Redefinir seleção</button>
+    <button id="modeKeep" class="active" disabled>Manter trechos</button>
+    <button id="modeExclude" disabled>Excluir trechos</button>
+    <button id="addExclusion" disabled>Adicionar exclusão</button>
     <button id="export" class="primary" disabled>Gerar novo PDF</button>
   </div>
   <div id="fileStatus" class="status">Abra um arquivo PDF para começar. O arquivo será processado localmente no seu navegador.</div>
@@ -60,6 +63,7 @@ footer{color:var(--muted);font-size:.83rem;text-align:center;padding:8px}
     <div class="pill">Início: <b id="startLabel">primeira página</b></div>
     <div class="pill">Fim: <b id="endLabel">última página</b></div>
   </div>
+  <div id="exclusionList" class="selection" aria-live="polite"></div>
   <p class="help" id="instruction">Depois de abrir o arquivo, escolha “Marcar início” ou “Marcar fim” e toque/click na altura desejada da página correspondente.</p>
   <div id="progress"><div id="progressBar"></div></div>
   <div id="workStatus" class="status" aria-live="polite"></div>
@@ -81,11 +85,14 @@ footer{color:var(--muted);font-size:.83rem;text-align:center;padding:8px}
 const $ = id => document.getElementById(id);
 const fileInput=$("file"), pagesEl=$("pages"), statusEl=$("fileStatus"), workStatus=$("workStatus");
 let pdf=null, fileName="documento", pageViews=[], mode=null;
-let start={page:1,y:0}, end=null;
+let start={page:1,y:0}, end=null, operation="keep", exclusions=[];
 const A4W=210, A4H=297, MARGIN=10, CONTENT_W=A4W-2*MARGIN, CONTENT_H=A4H-2*MARGIN;
 if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}
 function setProgress(p,show=true){$("progress").style.display=show?"block":"none";$("progressBar").style.width=Math.max(0,Math.min(100,p))+"%";}
 function updateSelection(){
+  $("modeKeep").classList.toggle("active",operation==="keep");
+  $("modeExclude").classList.toggle("active",operation==="exclude");
+  $("addExclusion").disabled=!pdf||operation!=="exclude"||!validRange();
   $("startLabel").textContent=start?`pág. ${start.page} · ${Math.round(start.y*100)}%`:"não definido";
   $("endLabel").textContent=end?`pág. ${end.page} · ${Math.round(end.y*100)}%`:"última página";
   document.querySelectorAll(".page-card").forEach(card=>{
@@ -97,7 +104,10 @@ function updateSelection(){
     if(start&&start.page===v.num)addMarker(v.markers,start.y,"start","INÍCIO");
     if(end&&end.page===v.num)addMarker(v.markers,end.y,"end","FIM");
   });
-  $("export").disabled=!pdf||!start||!end||!validRange();
+  $("export").disabled=!pdf||(operation==="keep"?!validRange():false);
+  const list=$("exclusionList");list.innerHTML="";
+  exclusions.forEach((x,i)=>{const item=document.createElement("div");item.className="pill";item.innerHTML=`Exclusão ${i+1}: <b>pág. ${x.a.page} a ${x.b.page}</b> `;const del=document.createElement("button");del.textContent="Remover";del.style.marginLeft="8px";del.addEventListener("click",()=>{exclusions.splice(i,1);updateSelection();});item.appendChild(del);list.appendChild(item);});
+  if(operation==="exclude"&&!exclusions.length)list.textContent="Nenhum trecho marcado para exclusão.";
 }
 function addMarker(parent,y,cls,label){
  const line=document.createElement("div");line.className="marker "+cls;line.style.top=(y*100)+"%";
@@ -131,9 +141,12 @@ function setMode(m){
  mode=m;$("startMode").classList.toggle("active",m==="start");$("endMode").classList.toggle("active",m==="end");
  $("instruction").textContent=m==="start"?"Toque na página e na altura em que o trecho deve começar.":"Toque na página e na altura em que o trecho deve terminar.";
 }
+$("modeKeep").addEventListener("click",()=>{operation="keep";exclusions=[];setMode(null);updateSelection();});
+$("modeExclude").addEventListener("click",()=>{operation="exclude";start=null;end=null;setMode("start");updateSelection();});
+$("addExclusion").addEventListener("click",()=>{if(!validRange())return;exclusions.push({a:{...start},b:{...end}});start=null;end=null;setMode("start");updateSelection();});
 $("startMode").addEventListener("click",()=>setMode(mode==="start"?null:"start"));
 $("endMode").addEventListener("click",()=>setMode(mode==="end"?null:"end"));
-$("reset").addEventListener("click",()=>{start={page:1,y:0};end={page:pdf.numPages,y:1};setMode(null);updateSelection();});
+$("reset").addEventListener("click",()=>{exclusions=[];start={page:1,y:0};end={page:pdf.numPages,y:1};operation="keep";setMode(null);updateSelection();});
 fileInput.addEventListener("change",async e=>{
  const file=e.target.files[0];if(!file)return;
  if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf")){statusEl.textContent="Selecione um arquivo PDF.";return;}
@@ -144,6 +157,7 @@ fileInput.addEventListener("change",async e=>{
   pdf=await pdfjsLib.getDocument({data:bytes}).promise;
   start={page:1,y:0};end={page:pdf.numPages,y:1};
   $("startMode").disabled=$("endMode").disabled=$("reset").disabled=false;
+  $("modeKeep").disabled=$("modeExclude").disabled=false;
   statusEl.textContent=`${file.name} · ${pdf.numPages} página(s)`;
   for(let n=1;n<=pdf.numPages;n++){
    const page=await pdf.getPage(n);
@@ -164,17 +178,19 @@ fileInput.addEventListener("change",async e=>{
    });
    card.append(title,wrap);pagesEl.appendChild(card);pageViews.push({num:n,page,canvas,markers,base});
   }
-  updateSelection();$("instruction").textContent="Selecione os marcadores de início e fim. Por padrão, o documento inteiro está selecionado.";
+  updateSelection();$("instruction").textContent="Escolha manter trechos ou excluir trechos. No modo de exclusão, marque início e fim e adicione quantos intervalos desejar.";
  }catch(err){console.error(err);statusEl.textContent="Não foi possível abrir o PDF: "+err.message;pdf=null;}
 });
 $("export").addEventListener("click",async()=>{
- if(!pdf||!validRange())return;
+ if(!pdf||(operation==="keep"&&!validRange()))return;
+ if(operation==="exclude"&&mode==="start"&&start) { /* início ainda não finalizado */ }
  $("export").disabled=true;setProgress(0);workStatus.textContent="Preparando páginas em alta resolução…";
  try{
   const {jsPDF}=window.jspdf;
   const out=new jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true});
   let currentY=MARGIN;
-  const firstPage=start.page,lastPage=end.page;
+  const cuts=operation==="exclude"?exclusions.slice().sort((x,y)=>x.a.page-y.a.page||x.a.y-y.a.y):[];
+  const firstPage=operation==="keep"?start.page:1,lastPage=operation==="keep"?end.page:pdf.numPages;
   for(let n=firstPage;n<=lastPage;n++){
    workStatus.textContent=`Processando página ${n} de ${lastPage}…`;
    const page=pageViews[n-1].page;
@@ -184,22 +200,25 @@ $("export").addEventListener("click",async()=>{
    const viewport=page.getViewport({scale});
    const canvas=document.createElement("canvas");canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
    await page.render({canvasContext:canvas.getContext("2d"),viewport}).promise;
-   let top=n===firstPage?Math.round(start.y*canvas.height):0;
-   let bottom=n===lastPage?Math.round(end.y*canvas.height):canvas.height;
+   let top=operation==="keep"&&n===firstPage?Math.round(start.y*canvas.height):0;
+   let bottom=operation==="keep"&&n===lastPage?Math.round(end.y*canvas.height):canvas.height;
    top=Math.max(0,Math.min(canvas.height,top));bottom=Math.max(0,Math.min(canvas.height,bottom));
-   // Nas junções, elimina apenas as margens vazias das páginas originais.
-   // Mantém 2 mm de respiro de cada lado, sem alterar os espaços internos.
-   if(n>firstPage||n<lastPage){
-    const ink=findInkBounds(canvas);
-    const padPx=Math.round(canvas.width*2/CONTENT_W);
-    if(n>firstPage)top=Math.max(top,ink.top-padPx);
-    if(n<lastPage)bottom=Math.min(bottom,ink.bottom+padPx);
+   const cutsHere=cuts.filter(c=>n>=c.a.page&&n<=c.b.page);
+   const kept=[];let cursor=top;
+   for(const cut of cutsHere){
+    const cutTop=cut.a.page===n?Math.round(cut.a.y*canvas.height):0;
+    const cutBottom=cut.b.page===n?Math.round(cut.b.y*canvas.height):canvas.height;
+    if(cutTop>cursor)kept.push([cursor,Math.min(bottom,cutTop)]);
+    cursor=Math.max(cursor,cutBottom);
    }
-   if(bottom<=top)throw new Error("O intervalo selecionado não contém conteúdo.");
-   const sourceHeight=bottom-top;
+   if(cursor<bottom)kept.push([cursor,bottom]);
+   if(operation==="keep"&&cuts.length===0&&bottom>top) { /* seleção tradicional */ }
    const mmPerPixel=CONTENT_W/canvas.width;
-   let offset=0;
-   while(offset<sourceHeight){
+   for(const part of kept){
+    let partTop=part[0],partBottom=part[1];
+    if(partBottom<=partTop)continue;
+    let offset=0,sourceHeight=partBottom-partTop;
+    while(offset<sourceHeight){
     if(currentY>=A4H-MARGIN-0.5){out.addPage();currentY=MARGIN;}
     const availableMm=A4H-MARGIN-currentY;
     const takePx=Math.min(sourceHeight-offset,Math.floor(availableMm/mmPerPixel));
@@ -207,19 +226,20 @@ $("export").addEventListener("click",async()=>{
     const piece=document.createElement("canvas");piece.width=canvas.width;piece.height=takePx;
     const ctx=piece.getContext("2d",{alpha:false});
     ctx.fillStyle="#fff";ctx.fillRect(0,0,piece.width,piece.height);
-    ctx.drawImage(canvas,0,top+offset,canvas.width,takePx,0,0,canvas.width,takePx);
+    ctx.drawImage(canvas,0,partTop+offset,canvas.width,takePx,0,0,canvas.width,takePx);
     const hMm=takePx*mmPerPixel;
     out.addImage(piece.toDataURL("image/jpeg",0.94),"JPEG",MARGIN,currentY,CONTENT_W,hMm,undefined,"FAST");
     currentY+=hMm;offset+=takePx;
     if(offset<sourceHeight){out.addPage();currentY=MARGIN;}
+    }
    }
    canvas.width=1;canvas.height=1;
    setProgress(((n-firstPage+1)/(lastPage-firstPage+1))*100);
   }
-  out.save(`${fileName}-trecho.pdf`);
+  out.save(`${fileName}-${operation==="exclude"?"sem-trechos":"trecho"}.pdf`);
   workStatus.textContent="PDF gerado. Se o download não começar automaticamente, verifique os downloads do navegador.";
  }catch(err){console.error(err);workStatus.textContent="Erro ao gerar o PDF: "+err.message;}
- finally{$("export").disabled=!validRange();setTimeout(()=>setProgress(0,false),1200);}
+ finally{$("export").disabled=operation==="keep"?!validRange():!pdf;setTimeout(()=>setProgress(0,false),1200);}
 });
 })();
 </script>
