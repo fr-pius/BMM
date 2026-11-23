@@ -216,6 +216,14 @@ $("export").addEventListener("click",async()=>{
    const mmPerPixel=CONTENT_W/canvas.width;
    for(const part of kept){
     let partTop=part[0],partBottom=part[1];
+    // Preserva o tratamento original das margens nas junções entre páginas.
+    if(partBottom<=partTop)continue;
+    if((partTop===0&&n>firstPage)||(partBottom===canvas.height&&n<lastPage)){
+     const ink=findInkBounds(canvas);
+     const padPx=Math.round(canvas.width*2/CONTENT_W);
+     if(partTop===0&&n>firstPage)partTop=Math.max(partTop,ink.top-padPx);
+     if(partBottom===canvas.height&&n<lastPage)partBottom=Math.min(partBottom,ink.bottom+padPx);
+    }
     if(partBottom<=partTop)continue;
     let offset=0,sourceHeight=partBottom-partTop;
     while(offset<sourceHeight){
