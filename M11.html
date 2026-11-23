@@ -173,8 +173,15 @@ fileInput.addEventListener("change",async e=>{
    wrap.addEventListener("click",ev=>{
     if(!mode)return;
     const r=wrap.getBoundingClientRect();const y=Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height));
-    if(mode==="start")start={page:n,y};else end={page:n,y};
-    setMode(null);updateSelection();
+    if(mode==="start"){
+     start={page:n,y};
+     // No modo de exclusão, após marcar o início, ativa automaticamente o fim.
+     setMode(operation==="exclude"?"end":null);
+    }else{
+     end={page:n,y};
+     setMode(null);
+    }
+    updateSelection();
    });
    card.append(title,wrap);pagesEl.appendChild(card);pageViews.push({num:n,page,canvas,markers,base});
   }
