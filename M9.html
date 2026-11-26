@@ -228,7 +228,7 @@
       left: 10%;
       top: 9%;
       width: 80%;
-      height: 59%;
+      height: 61.5%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -742,13 +742,13 @@
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
             ctx.drawImage(image, 0, 0, width, height);
 
-            // A janela ocupa aproximadamente x=10–90% e y=9–68% da carta.
-            // Amostramos faixas estreitas imediatamente do lado de fora dessas bordas.
+            // A janela ocupa aproximadamente x=10–90% e y=9–70.5% da carta.
+            // Amostramos as faixas periféricas junto às bordas da área ilustrativa.
             const bands = [
               [0.085, 0.09, 0.83, 0.012],  // acima
-              [0.085, 0.668, 0.83, 0.012], // abaixo
-              [0.085, 0.10, 0.012, 0.56], // esquerda
-              [0.893, 0.10, 0.012, 0.56]  // direita
+              [0.085, 0.693, 0.83, 0.012], // abaixo
+              [0.085, 0.10, 0.012, 0.593], // esquerda
+              [0.893, 0.10, 0.012, 0.593]  // direita
             ];
             const samples = [];
 
