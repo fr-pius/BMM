@@ -659,12 +659,9 @@
             <label for="boxH">Altura (%)</label>
             <input id="boxH" type="number" min="1" max="100" step="0.5" disabled>
           </div>
-          <div>
-            <label for="fontSize">Fonte (% da largura)</label>
-            <input id="fontSize" type="number" min="0.8" max="12" step="0.1" disabled>
-          </div>
         </div>
 
+        <p class="hint">A fonte e as quebras de linha são ajustadas automaticamente para usar o maior tamanho que caiba no espaço disponível.</p>
         <div class="actions">
           <button id="deselect">Desselecionar</button>
           <button id="resetBox">Restaurar caixa</button>
@@ -700,12 +697,12 @@
       let artData = '';
 
       const defaults = {
-        vNumber: { x: 8, y: 4, w: 22, h: 3.5, font: 3.2, align: 'center' },
-        vKind: { x: 62, y: 4, w: 30, h: 3.5, font: 2.6, align: 'center' },
-        vTitle: { x: 20, y: 70.5, w: 60, h: 5, font: 4, align: 'center' },
-        vDescription: { x: 17, y: 77, w: 66, h: 10, font: 2.65, align: 'center' },
-        vDate: { x: 10, y: 90, w: 42, h: 3, font: 2.1, align: 'left' },
-        vChild: { x: 53, y: 90, w: 37, h: 3, font: 2.1, align: 'right' }
+        vNumber: { x: 8, y: 4, w: 22, h: 3.5, align: 'center' },
+        vKind: { x: 62, y: 4, w: 30, h: 3.5, align: 'center' },
+        vTitle: { x: 20, y: 70.5, w: 60, h: 5, align: 'center' },
+        vDescription: { x: 17, y: 77, w: 66, h: 10, align: 'center' },
+        vDate: { x: 10, y: 90, w: 42, h: 3, align: 'left' },
+        vChild: { x: 53, y: 90, w: 37, h: 3, align: 'right' }
       };
 
       const labelNames = {
@@ -966,75 +963,53 @@
           y: num(s.top) / card.clientHeight * 100,
           w: el.offsetWidth / card.clientWidth * 100,
           h: el.offsetHeight / card.clientHeight * 100,
-          font: parseFloat(el.dataset.maxFont) || num(s.fontSize) / card.clientWidth * 100,
           align: 'center' 
         };
       }
 
-      function applyGeom(el, g, preserveMaxFont = false) {
+      const MAX_AUTO_FONT_CQW = 12;
+
+      function applyGeom(el, g) {
         el.style.left = g.x + '%';
         el.style.top = g.y + '%';
         el.style.width = g.w + '%';
         el.style.height = g.h + '%';
         el.style.right = 'auto';
         el.style.bottom = 'auto';
-        if (!preserveMaxFont || !el.dataset.maxFont) {
-          el.dataset.maxFont = String(g.font || 2.5);
-        }
-        el.style.fontSize = el.dataset.maxFont + 'cqw';
-        el.style.textAlign = 'center';
         fitFontToBox(el);
       }
 
-      // Ajusta a fonte sem permitir que ela desapareça por redução excessiva.
-      // Se o conteúdo não couber, preserva um tamanho mínimo legível; o usuário
-      // pode então ampliar a caixa ou reduzir o texto.
+      // Recalcula a fonte quando o texto ou a geometria da caixa mudar.
+      // O navegador determina as quebras de linha conforme o espaço disponível.
       function fitFontToBox(el) {
         if (!el || !card.clientWidth) return;
-        const maxCqw = parseFloat(el.dataset.maxFont) || 2.5;
-        const maxPx = Math.max(1, maxCqw / 100 * card.clientWidth);
         const rect = el.getBoundingClientRect();
         if (!rect.width || !rect.height) return;
 
-        const minPx = Math.min(maxPx, Math.max(7, card.clientWidth * 0.012));
+        const maxPx = Math.max(1, MAX_AUTO_FONT_CQW / 100 * card.clientWidth);
         const probe = el.cloneNode(true);
         probe.classList.remove('selected');
         probe.querySelectorAll('.handle').forEach(node => node.remove());
-        probe.style.position = 'fixed';
-        probe.style.left = '-10000px';
-        probe.style.top = '0';
-        probe.style.width = rect.width + 'px';
-        probe.style.height = rect.height + 'px';
-        probe.style.minWidth = '0';
-        probe.style.minHeight = '0';
-        probe.style.maxWidth = 'none';
-        probe.style.maxHeight = 'none';
-        probe.style.overflow = 'hidden';
-        probe.style.display = 'block';
-        probe.style.boxSizing = 'border-box';
-        probe.style.border = '0';
-        probe.style.margin = '0';
-        probe.style.padding = '0';
-        probe.style.textAlign = 'center';
-        probe.style.whiteSpace = 'pre-wrap';
-        probe.style.overflowWrap = 'anywhere';
-        probe.style.wordBreak = 'break-word';
-        probe.style.lineHeight = getComputedStyle(el).lineHeight;
+        Object.assign(probe.style, {
+          position: 'fixed', left: '-10000px', top: '0',
+          width: rect.width + 'px', height: rect.height + 'px',
+          minWidth: '0', minHeight: '0', maxWidth: 'none', maxHeight: 'none',
+          overflow: 'hidden', display: 'block', boxSizing: 'border-box',
+          border: '0', margin: '0', padding: '0', textAlign: 'center',
+          whiteSpace: 'pre-wrap', overflowWrap: 'anywhere',
+          wordBreak: 'break-word', lineHeight: '1.1'
+        });
         document.body.appendChild(probe);
 
-        let low = minPx;
-        let high = Math.max(minPx, maxPx);
-        let best = minPx;
-        for (let i = 0; i < 16; i++) {
+        let low = 1, high = maxPx, best = 1;
+        for (let i = 0; i < 20; i++) {
           const mid = (low + high) / 2;
           probe.style.fontSize = mid + 'px';
           if (probe.scrollHeight <= probe.clientHeight + 1 &&
               probe.scrollWidth <= probe.clientWidth + 1) {
             best = mid;
             low = mid;
-          } else {
-            high = mid;
-          }
+          } else high = mid;
         }
         probe.remove();
         el.style.fontSize = (best / card.clientWidth * 100) + 'cqw';
@@ -1053,7 +1028,7 @@
           ? 'Caixa selecionada: ' + labelNames[selected.id]
           : 'Nenhuma caixa selecionada';
 
-        ['posX', 'posY', 'boxW', 'boxH', 'fontSize']
+        ['posX', 'posY', 'boxW', 'boxH']
           .forEach(id => $(id).disabled = !on);
 
         if (on) {
@@ -1062,7 +1037,6 @@
           $('posY').value = g.y.toFixed(1);
           $('boxW').value = g.w.toFixed(1);
           $('boxH').value = g.h.toFixed(1);
-          $('fontSize').value = g.font.toFixed(2);
         }
       }
 
@@ -1074,7 +1048,6 @@
         g.y = clamp(+$('posY').value, 0, 100 - g.h);
         g.w = clamp(+$('boxW').value, 2, 100 - g.x);
         g.h = clamp(+$('boxH').value, 1, 100 - g.y);
-        g.font = clamp(+$('fontSize').value, 0.8, 12);
         g.align = 'center';
 
         applyGeom(selected, g);
@@ -1125,7 +1098,7 @@
 
       window.addEventListener('pointerup', () => drag = null);
 
-      ['posX', 'posY', 'boxW', 'boxH', 'fontSize']
+      ['posX', 'posY', 'boxW', 'boxH']
         .forEach(id => $(id).addEventListener('input', updateSelected));
 
       $('deselect').onclick = () => choose(null);
@@ -1254,7 +1227,6 @@
           ['left', 'top', 'width', 'height', 'right', 'bottom',
            'font-size', 'text-align', 'display', 'visibility', 'opacity',
            'transform'].forEach(property => el.style.removeProperty(property));
-          delete el.dataset.maxFont;
         });
       }
 
