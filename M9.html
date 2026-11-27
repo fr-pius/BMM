@@ -311,14 +311,13 @@
       font-weight: 800;
     }
 
-    .kind {
+    .receipt-date {
       left: 62%;
       top: 4%;
       width: 30%;
       height: 3.5%;
       font-size: 2.6cqw;
-      font-weight: 800;
-      text-transform: uppercase;
+      font-weight: 750;
     }
 
     .title {
@@ -334,22 +333,22 @@
       left: 17%;
       top: 77%;
       width: 66%;
-      height: 10%;
+      height: 6%;
       font-size: 2.65cqw;
     }
 
-    .date {
-      left: 10%;
-      top: 90%;
-      width: 42%;
-      height: 3%;
-      font-size: 2.1cqw;
+    .brief-description {
+      left: 17%;
+      top: 84%;
+      width: 66%;
+      height: 5%;
+      font-size: 2.4cqw;
     }
 
     .child {
-      left: 53%;
-      top: 90%;
-      width: 37%;
+      left: 20%;
+      top: 92%;
+      width: 60%;
       height: 3%;
       font-size: 2.1cqw;
       font-weight: 750;
@@ -558,10 +557,11 @@
             <img id="art" alt="Ilustração da carta">
           </div>
           <div class="txt number" id="vNumber" data-field="number">007<span class="handle"></span></div>
-          <div class="txt kind" id="vKind" data-field="kind">HABILIDADE<span class="handle"></span></div>
+          
           <div class="txt title" id="vTitle" data-field="title">Missa conventual<span class="handle"></span></div>
           <div class="txt description" id="vDescription" data-field="description">Reconhece a participação atenta e respeitosa na celebração da Santa Missa.<span class="handle"></span></div>
-          <div class="txt date" id="vDate" data-field="date">Recebida: 16/10/2026<span class="handle"></span></div>
+          <div class="txt brief-description" id="vBriefDescription" data-field="briefDescription">Breve descrição.<span class="handle"></span></div>
+          <div class="txt receipt-date" id="vDate" data-field="date">16/10/2026<span class="handle"></span></div>
           <div class="txt child" id="vChild" data-field="child">Nome da criança<span class="handle"></span></div>
           <img id="frame" class="frame" alt="Moldura decorativa">
         </div>
@@ -575,10 +575,7 @@
           <label for="number">Número</label>
           <input id="number" value="007" maxlength="8">
         </div>
-        <div>
-          <label for="kind">Categoria</label>
-          <input id="kind" value="Habilidade" maxlength="22">
-        </div>
+        
       </div>
 
       <label for="title">Título da conquista</label>
@@ -587,10 +584,13 @@
       <label for="description">Breve explicação</label>
       <textarea id="description" maxlength="180">Reconhece a participação atenta e respeitosa na celebração da Santa Missa.</textarea>
 
+      <label for="briefDescription">Breve descrição</label>
+      <textarea id="briefDescription" maxlength="180">Breve descrição.</textarea>
+
       <div class="pair">
         <div>
-          <label for="date">Data de recebimento</label>
-          <input id="date" value="16/10/2026" maxlength="18">
+          <label for="date">Data de recebimento (texto livre)</label>
+          <input id="date" value="16/10/2026" maxlength="40">
         </div>
         <div>
           <label for="child">Nome da criança</label>
@@ -685,7 +685,7 @@
   <script>
     (() => {
       const $ = id => document.getElementById(id);
-      const fields = ['number', 'kind', 'title', 'description', 'date', 'child'];
+      const fields = ['number', 'title', 'description', 'briefDescription', 'date', 'child'];
       const card = $('card');
       const frame = $('frame');
       const art = $('art');
@@ -699,19 +699,19 @@
 
       const defaults = {
         vNumber: { x: 8, y: 4, w: 22, h: 3.5, align: 'center' },
-        vKind: { x: 62, y: 4, w: 30, h: 3.5, align: 'center' },
         vTitle: { x: 20, y: 70.5, w: 60, h: 5, align: 'center' },
-        vDescription: { x: 17, y: 77, w: 66, h: 10, align: 'center' },
-        vDate: { x: 10, y: 90, w: 42, h: 3, align: 'left' },
-        vChild: { x: 53, y: 90, w: 37, h: 3, align: 'right' }
+        vDescription: { x: 17, y: 77, w: 66, h: 6, align: 'center' },
+        vBriefDescription: { x: 17, y: 84, w: 66, h: 5, align: 'center' },
+        vDate: { x: 62, y: 4, w: 30, h: 3.5, align: 'center' },
+        vChild: { x: 20, y: 92, w: 60, h: 3, align: 'center' }
       };
 
       const labelNames = {
         vNumber: 'Número',
-        vKind: 'Categoria',
         vTitle: 'Título',
-        vDescription: 'Descrição',
-        vDate: 'Data',
+        vDescription: 'Breve explicação',
+        vBriefDescription: 'Breve descrição',
+        vDate: 'Data de recebimento',
         vChild: 'Nome'
       };
 
@@ -901,11 +901,7 @@
         for (const id of fields) {
           const el = $('v' + id[0].toUpperCase() + id.slice(1));
           const v = val(id);
-          el.textContent = id === 'kind'
-            ? v.toUpperCase()
-            : id === 'date'
-              ? (v ? 'Recebida: ' + v : '')
-              : v;
+          el.textContent = v;
 
           const handle = document.createElement('span');
           handle.className = 'handle';
@@ -1209,7 +1205,7 @@
 
         return {
           format: 'BMM-card-layout',
-          version: 1,
+          version: 2,
           name: val('layoutName'),
           cardSize: val('cardSize'),
           artBg: val('artBg'),
@@ -1274,9 +1270,10 @@
         });
       }
 
-      function applySavedTextBoxes(boxes) {
+      function applySavedTextBoxes(boxes, layoutVersion = 1) {
         if (!boxes || typeof boxes !== 'object') return;
         document.querySelectorAll('.txt').forEach(el => {
+          if (el.id === 'vDate' && layoutVersion < 2) return;
           const field = el.dataset.field || '';
           const cap = field ? field[0].toUpperCase() + field.slice(1) : '';
           const saved = boxes[el.id] || (field && boxes[field]) ||
@@ -1337,7 +1334,7 @@
 
         if (data.name) $('layoutName').value = data.name;
 
-        applySavedTextBoxes(data.boxes);
+        applySavedTextBoxes(data.boxes, Number(data.version) || 1);
         syncText();
         choose(selected);
         refreshCardView('');
@@ -2103,9 +2100,9 @@
       $('reset').onclick = () => {
         const defaultsText = {
           number: '007',
-          kind: 'Habilidade',
           title: 'Missa conventual',
           description: 'Reconhece a participação atenta e respeitosa na celebração da Santa Missa.',
+          briefDescription: 'Breve descrição.',
           date: '16/10/2026',
           child: 'Nome da criança'
         };
