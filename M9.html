@@ -75,7 +75,7 @@
 
     .panel h1 { color: #fff4d6; }
     .panel h2 { margin-top: 14px; }
-    .panel label { overflow-wrap: normal; }
+    .panel label { overflow-wrap: anywhere; }
     .panel input[type="checkbox"] { width: auto; }
 
     h1 {
@@ -264,7 +264,7 @@
       position: absolute;
       z-index: 8;
       overflow: hidden;
-      overflow-wrap: anywhere;
+      overflow-wrap: normal;
       color: #fff1c9;
       text-shadow: 0 1px 3px #000;
       line-height: 1.1;
@@ -272,8 +272,6 @@
       place-items: center;
       text-align: center;
       white-space: pre-wrap;
-      word-break: normal;
-      hyphens: none;
       cursor: move;
       user-select: none;
       touch-action: none;
@@ -449,7 +447,8 @@
       .app,
       .selection-tools,
       .editor-help,
-      .preview-title {        display: none !important;
+      .preview-title {
+        display: none !important;
       }
 
       .print-sheet {
@@ -898,7 +897,8 @@
       applyArtBg();
 
       function syncText() {
-        for (const id of fields) {          const el = $('v' + id[0].toUpperCase() + id.slice(1));
+        for (const id of fields) {
+          const el = $('v' + id[0].toUpperCase() + id.slice(1));
           const v = val(id);
           el.textContent = id === 'kind'
             ? v.toUpperCase()
@@ -990,50 +990,27 @@
         const probe = el.cloneNode(true);
         probe.classList.remove('selected');
         probe.querySelectorAll('.handle').forEach(node => node.remove());
-
-        // A medição deve reproduzir a caixa real: mesma grade, padding,
-        // largura, altura e quebra de palavras. Só retiramos a interação.
         Object.assign(probe.style, {
-          position: 'fixed',
-          left: '-10000px',
-          top: '0',
-          width: rect.width + 'px',
-          height: rect.height + 'px',
-          minWidth: '0',
-          minHeight: '0',
-          maxWidth: 'none',
-          maxHeight: 'none',
-          overflow: 'hidden',
-          display: 'grid',
-          placeItems: 'center',
-          boxSizing: 'border-box',
-          margin: '0',
-          whiteSpace: 'pre-wrap',
-          overflowWrap: 'normal',
-          wordBreak: 'normal',
-          hyphens: 'none',
-          lineHeight: '1.1'
+          position: 'fixed', left: '-10000px', top: '0',
+          width: rect.width + 'px', height: rect.height + 'px',
+          minWidth: '0', minHeight: '0', maxWidth: 'none', maxHeight: 'none',
+          overflow: 'hidden', display: 'block', boxSizing: 'border-box',
+          border: '0', margin: '0', padding: '0', textAlign: 'center',
+          whiteSpace: 'pre-wrap', overflowWrap: 'normal',
+          wordBreak: 'normal', lineHeight: '1.1'
         });
         document.body.appendChild(probe);
 
         let low = 1, high = maxPx, best = 1;
-        for (let i = 0; i < 22; i++) {
+        for (let i = 0; i < 20; i++) {
           const mid = (low + high) / 2;
           probe.style.fontSize = mid + 'px';
-
-          // Reserva 2 px para diferenças de arredondamento entre pixels
-          // fracionários e inteiros, evitando cortar a última linha.
-          const fitsHeight = probe.scrollHeight <= probe.clientHeight - 2;
-          const fitsWidth = probe.scrollWidth <= probe.clientWidth - 2;
-
-          if (fitsHeight && fitsWidth) {
+          if (probe.scrollHeight <= probe.clientHeight + 1 &&
+              probe.scrollWidth <= probe.clientWidth + 1) {
             best = mid;
             low = mid;
-          } else {
-            high = mid;
-          }
+          } else high = mid;
         }
-
         probe.remove();
         el.style.fontSize = (best / card.clientWidth * 100) + 'cqw';
         el.style.display = 'grid';
@@ -1371,6 +1348,7 @@
           $('status').textContent = 'Arranjo não encontrado.';
           return;
         }
+
         try {
           applyLayout(all[name]);
           $('status').textContent = 'Arranjo carregado: ' + name;
@@ -1819,7 +1797,8 @@
         if (offset + centralSize > 0xFFFFFFFF) {
           throw new Error('O backup ultrapassa o limite de 4 GB do formato ZIP clássico.');
         }
-        const end = new Uint8Array(22);        const ev = new DataView(end.buffer);
+        const end = new Uint8Array(22);
+        const ev = new DataView(end.buffer);
         u32(ev, 0, 0x06054b50); u16(ev, 4, 0); u16(ev, 6, 0);
         u16(ev, 8, files.length); u16(ev, 10, files.length);
         u32(ev, 12, centralSize); u32(ev, 16, offset); u16(ev, 20, 0);
