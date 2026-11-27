@@ -987,47 +987,58 @@
         if (!rect.width || !rect.height) return;
 
         const maxPx = Math.max(1, MAX_AUTO_FONT_CQW / 100 * card.clientWidth);
-        const style = getComputedStyle(el);
-        const px = name => parseFloat(style[name]) || 0;
-        const horizontalInsets =
-          px('paddingLeft') + px('paddingRight') +
-          px('borderLeftWidth') + px('borderRightWidth');
-        const verticalInsets =
-          px('paddingTop') + px('paddingBottom') +
-          px('borderTopWidth') + px('borderBottomWidth');
-
-        // A cópia recebe exatamente a área interna disponível na caixa real.
-        // Isso evita que o cálculo ignore o padding da descrição e subestime
-        // a quantidade de linhas que aparecerá na carta.
-        const contentWidth = Math.max(1, rect.width - horizontalInsets);
-        const contentHeight = Math.max(1, rect.height - verticalInsets);
+        const computed = getComputedStyle(el);
         const probe = el.cloneNode(true);
         probe.classList.remove('selected');
         probe.querySelectorAll('.handle').forEach(node => node.remove());
+
+        // A medição reproduz a caixa real: mesmas dimensões externas,
+        // mesmo padding, mesma tipografia e o mesmo layout em grade.
         Object.assign(probe.style, {
-          position: 'fixed', left: '-10000px', top: '0',
-          width: contentWidth + 'px', height: contentHeight + 'px',
-          minWidth: '0', minHeight: '0', maxWidth: 'none', maxHeight: 'none',
-          overflow: 'hidden', display: 'block', boxSizing: 'border-box',
-          border: '0', margin: '0', padding: '0', textAlign: 'center',
-          whiteSpace: 'pre-wrap', overflowWrap: 'normal',
-          wordBreak: 'normal', hyphens: 'none', lineHeight: '1.1'
+          position: 'fixed',
+          left: '-10000px',
+          top: '0',
+          right: 'auto',
+          bottom: 'auto',
+          width: rect.width + 'px',
+          height: rect.height + 'px',
+          minWidth: '0',
+          minHeight: '0',
+          maxWidth: 'none',
+          maxHeight: 'none',
+          boxSizing: 'border-box',
+          margin: '0',
+          border: '0',
+          display: 'grid',
+          placeItems: 'center',
+          textAlign: 'center',
+          whiteSpace: computed.whiteSpace,
+          overflowWrap: computed.overflowWrap,
+          wordBreak: computed.wordBreak,
+          hyphens: computed.hyphens,
+          lineHeight: computed.lineHeight,
+          padding: computed.padding,
+          overflow: 'hidden'
         });
         document.body.appendChild(probe);
 
         let low = 1, high = maxPx, best = 1;
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 22; i++) {
           const mid = (low + high) / 2;
           probe.style.fontSize = mid + 'px';
-          if (probe.scrollHeight <= probe.clientHeight + 1 &&
-              probe.scrollWidth <= probe.clientWidth + 1) {
+          const fitsHeight = probe.scrollHeight <= probe.clientHeight;
+          const fitsWidth = probe.scrollWidth <= probe.clientWidth;
+          if (fitsHeight && fitsWidth) {
             best = mid;
             low = mid;
-          } else high = mid;
+          } else {
+            high = mid;
+          }
         }
+
         probe.remove();
-        // Reserva 10% de folga para diferenças de renderização e altura real das linhas.
-        el.style.fontSize = (best * 0.90 / card.clientWidth * 100) + 'cqw';
+        // Folga pequena, sem reduzir excessivamente a fonte calculada.
+        el.style.fontSize = (best * 0.98 / card.clientWidth * 100) + 'cqw';
         el.style.display = 'grid';
         el.style.placeItems = 'center';
         el.style.textAlign = 'center';
