@@ -335,7 +335,6 @@
       top: 77%;
       width: 66%;
       height: 10%;
-      padding: 1%;
       font-size: 2.65cqw;
     }
 
@@ -985,51 +984,66 @@
       // O navegador determina as quebras de linha conforme o espaço disponível.
       function fitFontToBox(el) {
         if (!el || !card.clientWidth) return;
+
         const rect = el.getBoundingClientRect();
         if (!rect.width || !rect.height) return;
 
-        const maxPx = Math.max(1, MAX_AUTO_FONT_CQW / 100 * card.clientWidth);
-        const computed = getComputedStyle(el);
-        const probe = el.cloneNode(true);
-        probe.classList.remove('selected');
-        probe.querySelectorAll('.handle').forEach(node => node.remove());
+        const style = getComputedStyle(el);
+        const px = value => parseFloat(value) || 0;
+        const borderX = px(style.borderLeftWidth) + px(style.borderRightWidth);
+        const borderY = px(style.borderTopWidth) + px(style.borderBottomWidth);
+        const boxWidth = Math.max(1, rect.width - borderX);
+        const boxHeight = Math.max(1, rect.height - borderY);
+        const text = Array.from(el.childNodes)
+          .filter(node => node.nodeType === Node.TEXT_NODE)
+          .map(node => node.textContent)
+          .join('');
 
-        // A medição reproduz a caixa real: mesmas dimensões externas,
-        // mesmo padding, mesma tipografia e o mesmo layout em grade.
+        // Mede o texto em um bloco simples, sem o layout grid da caixa real.
+        // A margem interna é calculada em função de cada tamanho testado.
+        const probe = document.createElement('div');
         Object.assign(probe.style, {
           position: 'fixed',
           left: '-10000px',
           top: '0',
-          right: 'auto',
-          bottom: 'auto',
-          width: rect.width + 'px',
-          height: rect.height + 'px',
+          width: boxWidth + 'px',
+          height: 'auto',
           minWidth: '0',
-          minHeight: '0',
           maxWidth: 'none',
-          maxHeight: 'none',
           boxSizing: 'border-box',
           margin: '0',
           border: '0',
-          display: 'grid',
-          placeItems: 'center',
+          display: 'block',
+          overflow: 'visible',
           textAlign: 'center',
-          whiteSpace: computed.whiteSpace,
-          overflowWrap: computed.overflowWrap,
-          wordBreak: computed.wordBreak,
-          hyphens: computed.hyphens,
-          lineHeight: computed.lineHeight,
-          padding: computed.padding,
-          overflow: 'hidden'
+          whiteSpace: 'pre-wrap',
+          overflowWrap: 'normal',
+          wordBreak: 'normal',
+          hyphens: 'none',
+          fontFamily: style.fontFamily,
+          fontWeight: style.fontWeight,
+          fontStyle: style.fontStyle,
+          letterSpacing: style.letterSpacing,
+          textTransform: style.textTransform,
+          lineHeight: '1.1',
+          padding: '0'
         });
+        probe.textContent = text;
         document.body.appendChild(probe);
 
-        let low = 1, high = maxPx, best = 1;
-        for (let i = 0; i < 22; i++) {
+        let low = 1;
+        let high = Math.max(1, MAX_AUTO_FONT_CQW / 100 * card.clientWidth);
+        let best = 1;
+
+        for (let i = 0; i < 24; i++) {
           const mid = (low + high) / 2;
           probe.style.fontSize = mid + 'px';
-          const fitsHeight = probe.scrollHeight <= probe.clientHeight;
-          const fitsWidth = probe.scrollWidth <= probe.clientWidth;
+          probe.style.padding = (mid * 0.30) + 'px ' + (mid * 0.40) + 'px';
+
+          const measured = probe.getBoundingClientRect();
+          const fitsHeight = measured.height <= boxHeight + 0.25;
+          const fitsWidth = probe.scrollWidth <= boxWidth + 0.25;
+
           if (fitsHeight && fitsWidth) {
             best = mid;
             low = mid;
@@ -1039,8 +1053,10 @@
         }
 
         probe.remove();
-        // Folga pequena, sem reduzir excessivamente a fonte calculada.
-        el.style.fontSize = (best * 0.98 / card.clientWidth * 100) + 'cqw';
+
+        // A pequena folga evita que arredondamentos do navegador causem corte.
+        el.style.fontSize = (best * 0.97 / card.clientWidth * 100) + 'cqw';
+        el.style.padding = '0.30em 0.40em';
         el.style.display = 'grid';
         el.style.placeItems = 'center';
         el.style.textAlign = 'center';
