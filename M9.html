@@ -667,7 +667,7 @@
           <button id="resetBox">Restaurar caixa</button>
         </div>
         <p class="hint">
-          Também pode editar X, Y, largura, altura e fonte numericamente.
+          Também pode editar X, Y, largura e altura numericamente.
           As medidas são percentuais da carta, para manter as proporções ao mudar seu tamanho.
         </p>
       </div>
@@ -1092,7 +1092,7 @@
           g.y = clamp(g.y + dy, 0, 100 - g.h);
         }
 
-        applyGeom(drag.el, g, true);
+        applyGeom(drag.el, g);
         choose(drag.el);
       });
 
