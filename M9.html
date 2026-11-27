@@ -983,52 +983,46 @@
       // O navegador determina as quebras de linha conforme o espaço disponível.
       function fitFontToBox(el) {
         if (!el || !card.clientWidth) return;
-        const rect = el.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
+        const box = el.getBoundingClientRect();
+        if (!box.width || !box.height) return;
 
         const maxPx = Math.max(1, MAX_AUTO_FONT_CQW / 100 * card.clientWidth);
-        const probe = el.cloneNode(true);
-        probe.classList.remove('selected');
-        probe.querySelectorAll('.handle').forEach(node => node.remove());
+        const style = getComputedStyle(el);
+        const borderLeft = parseFloat(style.borderLeftWidth) || 0;
+        const borderRight = parseFloat(style.borderRightWidth) || 0;
+        const borderTop = parseFloat(style.borderTopWidth) || 0;
+        const borderBottom = parseFloat(style.borderBottomWidth) || 0;
+        const padLeft = parseFloat(style.paddingLeft) || 0;
+        const padRight = parseFloat(style.paddingRight) || 0;
+        const padTop = parseFloat(style.paddingTop) || 0;
+        const padBottom = parseFloat(style.paddingBottom) || 0;
 
-        // Mede a altura natural do texto, sem o limitar artificialmente
-        // à altura da caixa. Assim a última linha também entra no cálculo.
-        Object.assign(probe.style, {
-          position: 'fixed',
-          left: '-10000px',
-          top: '0',
-          width: Math.max(1, rect.width - 2) + 'px',
-          height: 'auto',
-          minWidth: '0',
-          minHeight: '0',
-          maxWidth: 'none',
-          maxHeight: 'none',
-          overflow: 'visible',
-          display: 'block',
-          boxSizing: 'border-box',
-          border: '0',
-          margin: '0',
-          padding: '0',
-          textAlign: 'center',
-          whiteSpace: 'pre-wrap',
-          overflowWrap: 'normal',
-          wordBreak: 'normal',
-          hyphens: 'none',
-          lineHeight: '1.1'
-        });
-        document.body.appendChild(probe);
+        // Mede o texto real dentro da própria caixa, em vez de estimá-lo
+        // por uma cópia fora do cartão. Isso preserva o mesmo contexto de layout.
+        const range = document.createRange();
+        range.selectNodeContents(el);
 
-        const availableHeight = Math.max(1, rect.height - 2);
+        const inner = {
+          left: box.left + borderLeft + padLeft + 1,
+          right: box.right - borderRight - padRight - 1,
+          top: box.top + borderTop + padTop + 1,
+          bottom: box.bottom - borderBottom - padBottom - 1
+        };
+
         let low = 1, high = maxPx, best = 1;
         for (let i = 0; i < 22; i++) {
           const mid = (low + high) / 2;
-          probe.style.fontSize = mid + 'px';
+          el.style.fontSize = mid + 'px';
 
-          const naturalHeight = probe.getBoundingClientRect().height;
-          const fitsHeight = naturalHeight <= availableHeight;
-          const fitsWidth = probe.scrollWidth <= probe.clientWidth + 1;
+          const fragments = Array.from(range.getClientRects());
+          const fits = fragments.length > 0 && fragments.every(line =>
+            line.left >= inner.left - 0.5 &&
+            line.right <= inner.right + 0.5 &&
+            line.top >= inner.top - 0.5 &&
+            line.bottom <= inner.bottom + 0.5
+          );
 
-          if (fitsHeight && fitsWidth) {
+          if (fits) {
             best = mid;
             low = mid;
           } else {
@@ -1036,9 +1030,9 @@
           }
         }
 
-        probe.remove();
-        // Pequena folga contra arredondamentos na renderização final.
-        el.style.fontSize = (best * 0.99 / card.clientWidth * 100) + 'cqw';
+        range.detach();
+        // Folga adicional para evitar cortes por arredondamento de pixels.
+        el.style.fontSize = (best * 0.97 / card.clientWidth * 100) + 'cqw';
         el.style.display = 'grid';
         el.style.placeItems = 'center';
         el.style.textAlign = 'center';
