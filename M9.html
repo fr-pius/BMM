@@ -1305,7 +1305,12 @@
 
         if (data.fields) {
           fields.forEach(id => {
-            if (data.fields[id] !== undefined) $(id).value = data.fields[id];
+            if (data.fields[id] !== undefined) {
+              $(id).value = data.fields[id];
+            } else if (id === 'briefDescription') {
+              // Cards e arranjos antigos ainda não possuíam este campo.
+              $(id).value = 'Breve descrição.';
+            }
           });
         }
 
