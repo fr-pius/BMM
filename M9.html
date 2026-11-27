@@ -1026,7 +1026,8 @@
           } else high = mid;
         }
         probe.remove();
-        el.style.fontSize = (best / card.clientWidth * 100) + 'cqw';
+        // Reserva 10% de folga para diferenças de renderização e altura real das linhas.
+        el.style.fontSize = (best * 0.90 / card.clientWidth * 100) + 'cqw';
         el.style.display = 'grid';
         el.style.placeItems = 'center';
         el.style.textAlign = 'center';
