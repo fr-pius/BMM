@@ -987,12 +987,26 @@
         if (!rect.width || !rect.height) return;
 
         const maxPx = Math.max(1, MAX_AUTO_FONT_CQW / 100 * card.clientWidth);
+        const style = getComputedStyle(el);
+        const px = name => parseFloat(style[name]) || 0;
+        const horizontalInsets =
+          px('paddingLeft') + px('paddingRight') +
+          px('borderLeftWidth') + px('borderRightWidth');
+        const verticalInsets =
+          px('paddingTop') + px('paddingBottom') +
+          px('borderTopWidth') + px('borderBottomWidth');
+
+        // A cópia recebe exatamente a área interna disponível na caixa real.
+        // Isso evita que o cálculo ignore o padding da descrição e subestime
+        // a quantidade de linhas que aparecerá na carta.
+        const contentWidth = Math.max(1, rect.width - horizontalInsets);
+        const contentHeight = Math.max(1, rect.height - verticalInsets);
         const probe = el.cloneNode(true);
         probe.classList.remove('selected');
         probe.querySelectorAll('.handle').forEach(node => node.remove());
         Object.assign(probe.style, {
           position: 'fixed', left: '-10000px', top: '0',
-          width: rect.width + 'px', height: rect.height + 'px',
+          width: contentWidth + 'px', height: contentHeight + 'px',
           minWidth: '0', minHeight: '0', maxWidth: 'none', maxHeight: 'none',
           overflow: 'hidden', display: 'block', boxSizing: 'border-box',
           border: '0', margin: '0', padding: '0', textAlign: 'center',
