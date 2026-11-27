@@ -987,17 +987,19 @@
         if (!rect.width || !rect.height) return;
 
         const maxPx = Math.max(1, MAX_AUTO_FONT_CQW / 100 * card.clientWidth);
+        const computed = getComputedStyle(el);
         const probe = el.cloneNode(true);
         probe.classList.remove('selected');
         probe.querySelectorAll('.handle').forEach(node => node.remove());
 
-        // Mede a altura natural do texto, sem o limitar artificialmente
-        // à altura da caixa. Assim a última linha também entra no cálculo.
+        // Reproduz as dimensões internas reais da caixa, inclusive padding
+        // e bordas. Percentuais de padding não podem ser recalculados contra
+        // a largura da janela quando o elemento é movido para o body.
         Object.assign(probe.style, {
           position: 'fixed',
           left: '-10000px',
           top: '0',
-          width: Math.max(1, rect.width - 2) + 'px',
+          width: rect.width + 'px',
           height: 'auto',
           minWidth: '0',
           minHeight: '0',
@@ -1006,19 +1008,35 @@
           overflow: 'visible',
           display: 'block',
           boxSizing: 'border-box',
-          border: '0',
+          borderTopWidth: computed.borderTopWidth,
+          borderRightWidth: computed.borderRightWidth,
+          borderBottomWidth: computed.borderBottomWidth,
+          borderLeftWidth: computed.borderLeftWidth,
+          borderTopStyle: 'solid',
+          borderRightStyle: 'solid',
+          borderBottomStyle: 'solid',
+          borderLeftStyle: 'solid',
+          borderColor: 'transparent',
           margin: '0',
-          padding: '0',
-          textAlign: 'center',
-          whiteSpace: 'pre-wrap',
-          overflowWrap: 'normal',
-          wordBreak: 'normal',
-          hyphens: 'none',
-          lineHeight: '1.1'
+          paddingTop: computed.paddingTop,
+          paddingRight: computed.paddingRight,
+          paddingBottom: computed.paddingBottom,
+          paddingLeft: computed.paddingLeft,
+          textAlign: computed.textAlign,
+          whiteSpace: computed.whiteSpace,
+          overflowWrap: computed.overflowWrap,
+          wordBreak: computed.wordBreak,
+          hyphens: computed.hyphens,
+          lineHeight: computed.lineHeight,
+          fontFamily: computed.fontFamily,
+          fontWeight: computed.fontWeight,
+          fontStyle: computed.fontStyle,
+          letterSpacing: computed.letterSpacing,
+          textTransform: computed.textTransform
         });
         document.body.appendChild(probe);
 
-        const availableHeight = Math.max(1, rect.height - 2);
+        const availableHeight = rect.height;
         let low = 1, high = maxPx, best = 1;
         for (let i = 0; i < 22; i++) {
           const mid = (low + high) / 2;
@@ -1037,8 +1055,7 @@
         }
 
         probe.remove();
-        // Pequena folga contra arredondamentos na renderização final.
-        el.style.fontSize = (best * 0.99 / card.clientWidth * 100) + 'cqw';
+        el.style.fontSize = (best / card.clientWidth * 100) + 'cqw';
         el.style.display = 'grid';
         el.style.placeItems = 'center';
         el.style.textAlign = 'center';
