@@ -266,7 +266,7 @@
       overflow: hidden;
       overflow-wrap: normal;
       /* Margem interna obrigatória: o texto nunca encosta no contorno da caixa. */
-      padding: 0.30em 0.40em;
+      padding: 0.20cqw 0.35cqw;
       color: #fff1c9;
       text-shadow: 0 1px 3px #000;
       line-height: 1.1;
@@ -1038,7 +1038,7 @@
         for (let i = 0; i < 24; i++) {
           const mid = (low + high) / 2;
           probe.style.fontSize = mid + 'px';
-          probe.style.padding = (mid * 0.30) + 'px ' + (mid * 0.40) + 'px';
+          probe.style.padding = (card.clientWidth * 0.002) + 'px ' + (card.clientWidth * 0.0035) + 'px';
 
           const measured = probe.getBoundingClientRect();
           const fitsHeight = measured.height <= boxHeight + 0.25;
@@ -1056,7 +1056,7 @@
 
         // A pequena folga evita que arredondamentos do navegador causem corte.
         el.style.fontSize = (best * 0.97 / card.clientWidth * 100) + 'cqw';
-        el.style.padding = '0.30em 0.40em';
+        el.style.padding = '0.20cqw 0.35cqw';
         el.style.display = 'grid';
         el.style.placeItems = 'center';
         el.style.textAlign = 'center';
